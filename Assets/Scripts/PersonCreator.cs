@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class PersonCreator : MonoBehaviour
 {
+    [HideInInspector] public static PersonCreator Instance;
+
     UI ui;
     Obelisk obelisk;
     [SerializeField] GameObject personPrefab;
@@ -23,8 +25,13 @@ public class PersonCreator : MonoBehaviour
 
     private void Awake()
     {
-        ui = GetComponent<UI>();
-        obelisk = FindObjectOfType<Obelisk>();
+        Instance = this;
+        ui = UI.Instance;
+    }
+
+    private void Start()
+    {
+        obelisk = Obelisk.Instance;
     }
 
     public void StartCreate()
@@ -38,7 +45,7 @@ public class PersonCreator : MonoBehaviour
 
     public void RandomName()
     {
-        ui.SetName(firstName[Random.Range(0, firstName.Length)] + " " + lastName[Random.Range(0, lastName.Length)]);
+        ui.SetPersonCreatorName(firstName[Random.Range(0, firstName.Length)] + " " + lastName[Random.Range(0, lastName.Length)]);
     }
 
     public void RandomAppearance()

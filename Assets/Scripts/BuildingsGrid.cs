@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class BuildingsGrid : MonoBehaviour
 {
+    [HideInInspector] public static BuildingsGrid Instance;
+
     [SerializeField] Vector2Int gridSize;
 
     Building[,] grid;
@@ -13,6 +15,7 @@ public class BuildingsGrid : MonoBehaviour
 
     private void Awake()
     {
+        Instance = this;
         grid = new Building[gridSize.x, gridSize.y];
         mainCamera = Camera.main;
     }

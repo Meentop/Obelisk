@@ -56,10 +56,14 @@
     <Analyzer Include="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\Extensions\Microsoft\Visual Studio Tools for Unity\Analyzers\Microsoft.Unity.Analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\Outline.cs" />
     <Compile Include="Assets\Scripts\Building.cs" />
+    <Compile Include="Assets\Scripts\OutlineManager.cs" />
     <Compile Include="Assets\Scripts\CameraMove.cs" />
+    <Compile Include="Assets\Scripts\IndustrialBuilding.cs" />
     <Compile Include="Assets\Scripts\Person.cs" />
     <Compile Include="Assets\Scripts\BuildingsGrid.cs" />
+    <Compile Include="Assets\Scripts\PersonStatBlock.cs" />
     <Compile Include="Assets\Scripts\Obelisk.cs" />
     <Compile Include="Assets\Scripts\MouseRay.cs" />
     <Compile Include="Assets\Scripts\Resources.cs" />
@@ -68,6 +72,10 @@
     <Compile Include="Assets\Scripts\Cycles.cs" />
     <Compile Include="Assets\Scripts\PersonCreator.cs" />
     <Compile Include="Assets\Scripts\UI.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Shaders\OutlineMask.shader" />
+    <None Include="Assets\Shaders\OutlineFill.shader" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">

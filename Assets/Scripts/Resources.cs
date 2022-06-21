@@ -4,15 +4,22 @@ using UnityEngine;
 
 public class Resources : MonoBehaviour
 {
+    public static Resources Instance;
+
     float[] resources = new float[4] { 0, 0, 0, 0 };
 
     int[] resourcesCapasity = new int[4] { 0, 0, 0, 0};
 
     UI ui;
 
+    private void Awake()
+    {
+        Instance = this;
+    }
+
     private void Start()
     {
-        ui = GetComponent<UI>();
+        ui = UI.Instance;
         for (int i = 0; i < resources.Length; i++)
         {
             ui.UpdateResourceNumber((Resource)i, resources[i], resourcesCapasity[i]);
@@ -20,11 +27,10 @@ public class Resources : MonoBehaviour
         AddCapasity(Resource.Food, 100);
         AddCapasity(Resource.Wood, 150);
         AddCapasity(Resource.Metal, 150);
-        AddResource(Resource.Food, 200);
+        AddResource(Resource.Food, 99);
         AddResource(Resource.Wood, 100);
         AddResource(Resource.Metal, 50);
         AddResource(Resource.ResearchPoint, 999);
-        TakeResource(Resource.Food, 20);
     }
 
     //Resources
@@ -33,7 +39,10 @@ public class Resources : MonoBehaviour
     {
         resources[(int)resource] += add;
         if (resources[(int)resource] > resourcesCapasity[(int)resource] && resource != Resource.ResearchPoint)
+        {
             resources[(int)resource] = resourcesCapasity[(int)resource];
+            ui.StorageIsFull();
+        }
         ui.UpdateResourceNumber(resource, resources[(int)resource], resourcesCapasity[(int)resource]);
     }
 

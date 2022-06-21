@@ -13,7 +13,7 @@ public class BuildingButton : MonoBehaviour
     private void Start()
     {
         button = GetComponent<Button>();
-        resources = FindObjectOfType<Resources>();
+        resources = Resources.Instance;
         for (int i = 0; i < cost.Count; i++)
         {
             cost[i].text.text = cost[i].cost.ToString();

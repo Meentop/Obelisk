@@ -5,25 +5,25 @@ using UnityEngine;
 
 public abstract class Building : MonoBehaviour
 {
-    [SerializeField] List<Renderer> renderers = new List<Renderer>();
-    public Vector2Int size = Vector2Int.one;
-    
-    [SerializeField] List<Cost> cost = new List<Cost>();
+    [SerializeField] protected string buildingsName;
 
     Transform model;
     protected Resources resources;
     protected UI ui;
+    [HideInInspector] public Outline outline;
 
-    private void Awake()
-    {
-        resources = FindObjectOfType<Resources>();
-        ui = FindObjectOfType<UI>();
-        model = transform.GetChild(0);
-    }
+    [SerializeField] List<Renderer> renderers = new List<Renderer>();
+    public Vector2Int size = Vector2Int.one;
+    
+    [SerializeField] List<Cost> cost = new List<Cost>();
+    [SerializeField] int health;    
 
     protected virtual void Start()
     {
-        
+        resources = Resources.Instance;
+        model = transform.GetChild(0);
+        outline = GetComponent<Outline>();
+        ui = UI.Instance;
     }
 
     public void SetTransparent(bool available)

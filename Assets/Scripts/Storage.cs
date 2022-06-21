@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class Storage : Building
 {
-    [SerializeField] string storageName;
     [SerializeField] Resource resource;
     [SerializeField] int capasity;
   
@@ -16,6 +15,6 @@ public class Storage : Building
 
     public override void Click()
     {
-        ui.EnableStoragePanel(storageName, (int)resource, capasity);
+        ui.EnableStoragePanel(buildingsName, (int)resource, capasity);
     }
 }

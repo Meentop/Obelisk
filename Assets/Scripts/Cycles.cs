@@ -4,9 +4,11 @@ using UnityEngine;
 
 public class Cycles : MonoBehaviour
 {
+    [HideInInspector] public static Cycles Instance;
+
     public int cycle { get; private set; } = 0;
     public int cycleTime = 240;
-    [SerializeField] int timeScale = 1;
+    public int timeScale { get; private set; } = 1;
 
     public float curCycleTime { get; private set; } = 0;
 
@@ -15,10 +17,15 @@ public class Cycles : MonoBehaviour
     UI ui;
     Obelisk obelisk;
 
+    private void Awake()
+    {
+        Instance = this;
+    }
+
     private void Start()
     {
-        ui = GetComponent<UI>();
-        obelisk = FindObjectOfType<Obelisk>();
+        ui = UI.Instance;
+        obelisk = Obelisk.Instance;
         StartCoroutine(CycleCount());
         ui.UpdateCycleNumber(cycle);
     }
@@ -65,12 +72,12 @@ public class Cycles : MonoBehaviour
     {
         previousTimeScale = timeScale;
         SetTimeScale(0);
-        ui.SetNotInteractable(0);
+        ui.SetTimeSpeedButton(0);
     }
 
     public void SetPreviousTimeScale()
     {
         SetTimeScale(previousTimeScale);
-        ui.SetNotInteractable(previousTimeScale);
+        ui.SetTimeSpeedButton(previousTimeScale);
     }
 }

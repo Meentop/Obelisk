@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class Obelisk : Building
 {
+    [HideInInspector] public static Obelisk Instance;
+
     BuildingsGrid buildingsGrid;
     PersonCreator personCreator;
     Cycles cycles;
@@ -15,12 +17,18 @@ public class Obelisk : Building
 
     [SerializeField] Transform personSpawnPoint;
 
+    private void Awake()
+    {
+        Instance = this;
+    }
+
     protected override void Start()
     {
-        buildingsGrid = FindObjectOfType<BuildingsGrid>();
-        personCreator = FindObjectOfType<PersonCreator>();
-        cycles = FindObjectOfType<Cycles>();
-        cameraMove = FindObjectOfType<CameraMove>();
+        base.Start();
+        buildingsGrid = BuildingsGrid.Instance;
+        personCreator = PersonCreator.Instance;
+        cycles = Cycles.Instance;
+        cameraMove = CameraMove.Instance;
         buildingsGrid.PlaceObelisk(this, (int)transform.position.x, (int)transform.position.z);
     }
 
@@ -69,6 +77,8 @@ public class Obelisk : Building
         creatingNewPerson = false;
         cameraMove.UnblockedZoom();
         person.GetComponent<Person>().active = true;
+        int layer = LayerMask.NameToLayer("Person");
+        person.GetComponent<Person>().SetLayer(layer);
         Instantiate(person, personSpawnPoint.position, Quaternion.identity);
         cycles.SetPreviousTimeScale();
     }

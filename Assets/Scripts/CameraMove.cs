@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class CameraMove : MonoBehaviour
 {
+    [HideInInspector] public static CameraMove Instance;
+
     Vector3 startMousePos, deltaMousePos, startPos;
 
     float widthSize, heigthSize, nextSize;
@@ -10,6 +12,11 @@ public class CameraMove : MonoBehaviour
 
     [SerializeField] float minZoom;
     [SerializeField] float maxZoom, zoomLerpSpeed;
+
+    private void Awake()
+    {
+        Instance = this;
+    }
 
     private void Start()
     {
