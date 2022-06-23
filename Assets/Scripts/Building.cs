@@ -5,7 +5,7 @@ using UnityEngine;
 
 public abstract class Building : MonoBehaviour
 {
-    [SerializeField] protected string buildingsName;
+    public string buildingsName;
 
     Transform model;
     protected Resources resources;

@@ -58,10 +58,10 @@ public class Obelisk : Building
 
     public override void Click()
     {
-        if (availableNewPerson && !creatingNewPerson)
+        if (availableNewPerson && !creatingNewPerson && ui.EnabledStartUI())
         {
             personCreator.StartCreate();
-            cycles.SetPause();
+            cycles.SetBlockedPause();
             cameraMove.BlockedZoom(10f);
             globalText.SetActive(false);
             myCanvasIcon.SetActive(false);

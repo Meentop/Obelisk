@@ -27,7 +27,7 @@ public class Resources : MonoBehaviour
         AddCapasity(Resource.Food, 100);
         AddCapasity(Resource.Wood, 150);
         AddCapasity(Resource.Metal, 150);
-        AddResource(Resource.Food, 99);
+        AddResource(Resource.Food, 1);
         AddResource(Resource.Wood, 100);
         AddResource(Resource.Metal, 50);
         AddResource(Resource.ResearchPoint, 999);
@@ -55,6 +55,11 @@ public class Resources : MonoBehaviour
     {
         resources[(int)resource] -= take;
         ui.UpdateResourceNumber(resource, resources[(int)resource], resourcesCapasity[(int)resource]);
+    }
+
+    public int GetResource(Resource resource)
+    {
+        return (int)resources[(int)resource];
     }
 
     //Capasity

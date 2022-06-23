@@ -6,38 +6,50 @@ using UnityEngine.EventSystems;
 
 public class PersonStatBlock : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler
 {
-    public int number;
+    protected int number;
 
-    public IndustrialBuilding building;
+    IndustrialBuilding building;
 
-    public Transform pointer;
+    [SerializeField] protected Transform pointer;
 
-    public Text workerName, efficiency;
+    [SerializeField] protected GameObject hungry;
 
-    UI ui;
+    [SerializeField] protected Text fullName, efficiency;
+
+    protected UI ui;
 
     private void Start()
     {
         ui = UI.Instance;
     }
 
-    public void OnPointerDown(PointerEventData eventData)
+    public virtual void Initialization(int number, IndustrialBuilding building, Vector3 pointerPos, bool hungry, string name, string efficiency)
+    {
+        this.number = number;
+        this.building = building;
+        pointer.localPosition = pointerPos;
+        this.hungry.SetActive(hungry);
+        fullName.text = name;
+        this.efficiency.text = efficiency;
+    }
+
+    public virtual void OnPointerDown(PointerEventData eventData)
     {
         Person person = building.RemoveWorker(number);
         person.SpawnAfterBuilding();
         ui.SetCursorOnButton(false);
     }
 
-    public void OnPointerEnter(PointerEventData eventData)
+    public virtual void OnPointerEnter(PointerEventData eventData)
     {
-        workerName.gameObject.SetActive(true);
+        fullName.gameObject.SetActive(true);
         efficiency.gameObject.SetActive(true);
         ui.SetCursorOnButton(true);
     }
 
-    public void OnPointerExit(PointerEventData eventData)
+    public virtual void OnPointerExit(PointerEventData eventData)
     {
-        workerName.gameObject.SetActive(false);
+        fullName.gameObject.SetActive(false);
         efficiency.gameObject.SetActive(false);
         ui.SetCursorOnButton(false);
     }

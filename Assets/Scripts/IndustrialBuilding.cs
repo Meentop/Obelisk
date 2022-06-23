@@ -11,13 +11,12 @@ public class IndustrialBuilding : Building
     [SerializeField] float baseProduction;
     [SerializeField] List<Person> workers = new List<Person>();
 
-    IEnumerator[] works;
+    List<IEnumerator> works = new List<IEnumerator>();
 
     protected override void Start()
     {
         base.Start();
         cycles = Cycles.Instance;
-        works = new IEnumerator[workersCount];
     }
 
     public override void Click()
@@ -30,13 +29,15 @@ public class IndustrialBuilding : Building
         return workers.Count < workersCount;
     }
 
+
     public void AddWorker(GameObject person)
     {
         if(workers.Count < workersCount)
         {
             workers.Add(person.GetComponent<Person>());
             person.SetActive(false);
-            StartWork(workers.Count - 1);
+            person.GetComponent<Person>().workplace = this;
+            StartWork(person.GetComponent<Person>());
             ui.UpdateIndustrialWorkers(this, AllProduction(), workers, workersCount);
         }
     }
@@ -44,8 +45,9 @@ public class IndustrialBuilding : Building
     public Person RemoveWorker(int number)
     {
         Person person = workers[number];
-        person.gameObject.SetActive(true);
+        person.workplace = null;
         FinishWork(number);
+        person.gameObject.SetActive(true);
         workers.RemoveAt(number); 
         return person;
     }
@@ -62,34 +64,43 @@ public class IndustrialBuilding : Building
 
     //WorkProcess
 
-    void StartWork(int number)
+    void StartWork(Person person)
     {
-        FinishWork(number);
-        works[number] = Work(number);
-        StartCoroutine(works[number]);
+        works.Add(Work(person));
+        StartCoroutine(works[works.Count - 1]);
     }
 
     void FinishWork(int number)
     {
-        if (works[number] != null)
-            StopCoroutine(works[number]);
+        StopCoroutine(works[number]);
+        works.Remove(works[number]);
     }
 
-    IEnumerator Work(int number)
+    IEnumerator Work(Person person)
     {
-        float productionInCycle = baseProduction * ((workers[number].industrialEfficiency + workers[number].efficiencyModifier) / 100);
-        float timeForOneProduct = cycles.cycleTime / productionInCycle;
-        float curTime = 0;
         while (true)
         {
-            yield return new WaitForSecondsRealtime(0.1f);
-            workers[number].AddIndustrialExp(cycles.timeScale);
-            curTime += 0.1f * cycles.timeScale;
-            if (curTime >= timeForOneProduct)
+            float productionInCycle = baseProduction * ((workers[FindIndex(person)].industrialEfficiency + workers[FindIndex(person)].efficiencyModifier) / 100);
+            float timeForOneProduct = cycles.cycleTime / productionInCycle;
+            float curTime = 0;
+            while (curTime < timeForOneProduct)
             {
-                resources.AddResource(resource, 1);
-                StartWork(number);
+                yield return new WaitForSecondsRealtime(0.1f);
+                workers[FindIndex(person)].AddIndustrialExp(cycles.timeScale);
+                curTime += 0.1f * cycles.timeScale;
+                if (curTime >= timeForOneProduct)
+                    resources.AddResource(resource, 1);
             }
         }
+    }
+
+    public int FindIndex(Person person)
+    {
+        for (int i = 0; i < workers.Count; i++)
+        {
+            if (person == workers[i])
+                return i;
+        }
+        return -1;
     }
 }

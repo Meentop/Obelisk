@@ -10,13 +10,12 @@ public class UI : MonoBehaviour
     [SerializeField] GameObject startUI, cycles, resources;
     [SerializeField] List<GameObject> menus = new List<GameObject>();
     [SerializeField] List<GameObject> buildingPanels = new List<GameObject>();
+    [SerializeField] List<GameObject> necessaryPanels = new List<GameObject>();
     [SerializeField] GameObject cells;
 
     [SerializeField] Text[] resourceTexts = new Text[4];
 
-    [SerializeField] Text cycleNumber;
-
-    
+    [SerializeField] Text cycleNumber;    
 
     [SerializeField] List<Button> speedButtons = new List<Button>();
 
@@ -30,6 +29,12 @@ public class UI : MonoBehaviour
     [SerializeField] List<Button> buildingsTypeButtons = new List<Button>();
     [SerializeField] List<GameObject> buildingsType = new List<GameObject>();
 
+    [Header("PersonsList")]
+    [SerializeField] GameObject personsList;
+    [SerializeField] SortButtonGroup listSortButtonGroup;
+    [SerializeField] GameObject personListStat;
+    [SerializeField] Transform personsListStats;
+
     [Header("PersonCreator")]
     [SerializeField] GameObject personCreatorMenu;
     [SerializeField] InputField fullName;
@@ -41,10 +46,19 @@ public class UI : MonoBehaviour
     [SerializeField] List<Sprite> beards = new List<Sprite>();
     [SerializeField] List<Color> hairColors = new List<Color>();
 
+    [Header("Feed persons")]
+    [SerializeField] GameObject feedPersonsMenu;
+    [SerializeField] Text maxFood;
+    [SerializeField] GameObject stillNeedWarning;
+    [SerializeField] SortButtonGroup feedSortButtonGroup;
+    [SerializeField] GameObject feedPersonStat;
+    [SerializeField] Transform feedPersonStats;
+
     [Header("Person")]
     [SerializeField] GameObject personPanel;
     [SerializeField] Text personName;
     [SerializeField] Text personEffictiency;
+    [SerializeField] GameObject hungry;
     [SerializeField] Transform pointer;
 
     [Header("Obelisk Panel")]
@@ -64,7 +78,7 @@ public class UI : MonoBehaviour
     [SerializeField] Text industrialProduction;
     [SerializeField] Text industrialWorkersCount;
     [SerializeField] GameObject personStat;
-    [SerializeField] Transform personStatSpawnPoint;
+    [SerializeField] Transform personStats;
 
     private void Awake()
     {
@@ -80,10 +94,19 @@ public class UI : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            DisableAllMenu();
-            DisableAllBuildingPanels();
-            Disable(cells);
-            Enable(startUI);
+            bool activeNecessaryPanel = false;
+            foreach (GameObject gameObject in necessaryPanels)
+            {
+                if (gameObject.activeInHierarchy)
+                    activeNecessaryPanel = true;
+            }
+            if (!activeNecessaryPanel)
+            {
+                DisableAllMenu();
+                DisableAllBuildingPanels();
+                Disable(cells);
+                Enable(startUI);
+            }
         }
     }
 
@@ -93,6 +116,8 @@ public class UI : MonoBehaviour
         {
             Disable(menu);
         }
+        if(personsList.activeSelf)
+            DisablePersonsList();
     }
 
     void DisableAllBuildingPanels()
@@ -101,6 +126,11 @@ public class UI : MonoBehaviour
         {
             Disable(panel);
         }
+    }
+
+    public void EnableStartUI()
+    {
+        Enable(startUI);
     }
 
 
@@ -150,16 +180,15 @@ public class UI : MonoBehaviour
 
     public void NoWorkplace()
     {
-        print("what");
-        StartCoroutine(ShowGameObject(noWorkplace));
+        StartCoroutine(ShowWarning(noWorkplace));
     }
 
     public void StorageIsFull()
     {
-        StartCoroutine(ShowGameObject(storageIsFull));
+        StartCoroutine(ShowWarning(storageIsFull));
     }
 
-    IEnumerator ShowGameObject(GameObject gameObject)
+    IEnumerator ShowWarning(GameObject gameObject)
     {
         gameObject.SetActive(true);
         yield return new WaitForSeconds(3);
@@ -180,6 +209,54 @@ public class UI : MonoBehaviour
         }
         buildingsTypeButtons[type].interactable = false;
         buildingsType[type].SetActive(true);
+    }
+
+    //PersonsList
+
+    public void EnablePersonsList(List<Person> persons)
+    {
+        SpawnListStatBlocks(persons);
+        listSortButtonGroup.StartWork();
+    }
+
+    public void DisablePersonsList()
+    {
+        foreach (Transform transform in personsListStats)
+        {
+            Destroy(transform.gameObject);
+        }
+        Disable(personsList);
+        listSortButtonGroup.SetNeutralAllButtons();
+    }
+
+    void SpawnListStatBlocks(List<Person> persons)
+    {
+        
+        for (int i = 0; i < persons.Count; i++)
+        {
+            PersonListStat block = Instantiate(personListStat, personsListStats).GetComponent<PersonListStat>();
+            string workplace = "-";
+            int number = 0;
+            if (persons[i].workplace != null)
+            {
+                workplace = persons[i].workplace.buildingsName;
+                number = persons[i].workplace.FindIndex(persons[i]);
+            }
+            block.ListInitialization(number, persons[i], new Vector3((persons[i].combatEfficiency - 50) * 2, 0, 0), persons[i].isHungry, persons[i].fullName,
+                persons[i].industrialEfficiency + "/" + persons[i].combatEfficiency, workplace);
+        }
+    }
+
+    public void SortPersonsList(PersonListStat[] personsListStats)
+    {
+        for (int i = 0; i < personsListStats.Length; i++)
+        {
+            foreach (Transform transform in this.personsListStats)
+            {
+                if (transform.GetComponent<PersonListStat>() == personsListStats[i])
+                    transform.SetSiblingIndex(i);
+            }
+        }
     }
 
     //Resources
@@ -245,9 +322,91 @@ public class UI : MonoBehaviour
         return fullName.text;
     }
 
+    //Feed Persons
+
+    int fedPersons = 0, maxFoodCount;
+    public void EnableFeedPersonsMenu(List<Person> persons, int maxFood)
+    {
+        DisableAllMenu();
+        Disable(cells);
+        DisableAllBuildingPanels();
+        Disable(startUI);
+        Disable(cycles);
+        Enable(feedPersonsMenu);
+        SpawnFeedStatBlocks(persons, maxFood);
+        feedSortButtonGroup.StartWork();
+    }
+
+    public bool FinishFeed()
+    {
+        if (fedPersons == maxFoodCount)
+        {
+            foreach (Transform transform in feedPersonStats)
+            {
+                transform.GetComponent<FeedStatBlock>().FinishFeed();
+                Destroy(transform.gameObject);
+            }
+            Enable(startUI);
+            Enable(cycles);
+            Disable(feedPersonsMenu);
+            fedPersons = 0;
+            feedSortButtonGroup.SetNeutralAllButtons();
+            return true;
+        }
+        else
+        {
+            StartCoroutine(ShowWarning(stillNeedWarning));
+            return false;
+        }
+    }
+
+    void SpawnFeedStatBlocks(List<Person> persons, int maxFood)
+    {
+        maxFoodCount = maxFood;
+        this.maxFood.text = fedPersons + "/" + maxFoodCount;
+        for (int i = 0; i < persons.Count; i++)
+        {
+            FeedStatBlock block = Instantiate(feedPersonStat, feedPersonStats).GetComponent<FeedStatBlock>();
+            string workplace = "-";
+            if (persons[i].workplace != null)
+                 workplace = persons[i].workplace.buildingsName;
+            block.FeedInitialization(persons[i], new Vector3((persons[i].combatEfficiency - 50) * 2, 0, 0), persons[i].isHungry, persons[i].fullName,
+                persons[i].industrialEfficiency + "/" + persons[i].combatEfficiency, workplace);
+        }
+    }
+
+    public void SortFeedStatBlocks(FeedStatBlock[] feedStatBlocks)
+    {
+        for (int i = 0; i < feedStatBlocks.Length; i++)
+        {
+            foreach (Transform transform in feedPersonStats)
+            {
+                if (transform.GetComponent<FeedStatBlock>() == feedStatBlocks[i])
+                    transform.SetSiblingIndex(i);
+            }
+        }
+    }
+
+    public void GiveFood()
+    {
+        fedPersons++;
+        maxFood.text = fedPersons + "/" + maxFoodCount;
+    }
+
+    public void TakeFood()
+    {
+        fedPersons--;
+        maxFood.text = fedPersons + "/" + maxFoodCount;
+    }
+
+    public bool HasFood()
+    {
+        return maxFoodCount > fedPersons;
+    }
+
     //Person
 
-    public void EnablePersonPanel(string name, float combatEfficiency, float industrialEfficiency)
+    public void EnablePersonPanel(string name, float combatEfficiency, float industrialEfficiency, bool hungry)
     {
         if (EnabledStartUI())
         {
@@ -255,6 +414,7 @@ public class UI : MonoBehaviour
             Enable(personPanel);
             personName.text = name;
             personEffictiency.text = industrialEfficiency + "/" + combatEfficiency;
+            this.hungry.SetActive(hungry);
             pointer.localPosition = new Vector3((combatEfficiency - 50) * 2, 0, 0);
         }
     }
@@ -321,19 +481,14 @@ public class UI : MonoBehaviour
 
     void SpawnPersonStatBlocks(IndustrialBuilding building, List<Person> persons, int maxWorkers)
     {
-        PersonStatBlock[] statBlocks = FindObjectsOfType<PersonStatBlock>();
-        for (int i = 0; i < statBlocks.Length; i++)
-            Destroy(statBlocks[i].gameObject);
+        foreach (Transform child in personStats)
+            Destroy(child.gameObject);
         industrialWorkersCount.text = "Workers: " + persons.Count.ToString() + "/" + maxWorkers.ToString();
         for (int i = 0; i < persons.Count; i++)
         {
-            PersonStatBlock block = Instantiate(personStat, personStatSpawnPoint).GetComponent<PersonStatBlock>();
-            block.transform.localPosition = new Vector3(0f, i * -70, 0f);
-            block.number = i;
-            block.building = building;
-            block.pointer.localPosition = new Vector3((persons[i].combatEfficiency - 50) * 2, 0, 0);
-            block.workerName.text = persons[i].fullName;
-            block.efficiency.text = persons[i].industrialEfficiency + "/" + persons[i].combatEfficiency;
+            PersonStatBlock block = Instantiate(personStat, personStats).GetComponent<PersonStatBlock>();
+            block.Initialization(i, building, new Vector3((persons[i].combatEfficiency - 50) * 2, 0, 0),
+                persons[i].isHungry, persons[i].fullName, persons[i].industrialEfficiency + "/" + persons[i].combatEfficiency);
         }
     }
 }

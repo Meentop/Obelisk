@@ -8,14 +8,16 @@ public class Cycles : MonoBehaviour
 
     public int cycle { get; private set; } = 0;
     public int cycleTime = 240;
-    public int timeScale { get; private set; } = 1;
+    public int timeScale { get; private set; } = 99;
 
-    public float curCycleTime { get; private set; } = 0;
+    public float curCycleTime/* { get; private set; }*/ = 0;
+    bool blockedPause = false;
 
     [SerializeField] Transform arrow;
 
     UI ui;
     Obelisk obelisk;
+    PersonsManager personsManager;
 
     private void Awake()
     {
@@ -26,6 +28,7 @@ public class Cycles : MonoBehaviour
     {
         ui = UI.Instance;
         obelisk = Obelisk.Instance;
+        personsManager = PersonsManager.Instance;
         StartCoroutine(CycleCount());
         ui.UpdateCycleNumber(cycle);
     }
@@ -37,7 +40,7 @@ public class Cycles : MonoBehaviour
         SetArrowAngle();
         if (Input.GetKeyDown(KeyCode.Space) && timeScale != 0)
             SetPause();
-        else if (Input.GetKeyDown(KeyCode.Space) && timeScale == 0)
+        else if (Input.GetKeyDown(KeyCode.Space) && timeScale == 0 && !blockedPause)
             SetPreviousTimeScale();
     }
 
@@ -50,6 +53,7 @@ public class Cycles : MonoBehaviour
             if(curCycleTime >= cycleTime)
             {
                 cycle++;
+                personsManager.TakeFood();
                 if (cycle % obelisk.personSpawnTime == 0)
                     obelisk.AvailableNewPerson();
                 ui.UpdateCycleNumber(cycle);
@@ -79,5 +83,12 @@ public class Cycles : MonoBehaviour
     {
         SetTimeScale(previousTimeScale);
         ui.SetTimeSpeedButton(previousTimeScale);
+        blockedPause = false;
+    }
+
+    public void SetBlockedPause()
+    {
+        SetPause();
+        blockedPause = true;
     }
 }
