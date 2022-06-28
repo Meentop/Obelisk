@@ -12,15 +12,13 @@ public class Person : MonoBehaviour
 
     public Transform hairSpawnPoint, beardSpawnPoint, bodySpawnPoint;
 
-    public float industrialEfficiency = 100, combatEfficiency = 100, efficiencyModifier = 0;
+    public float efficiencyModifier = 0;
 
-    public bool isHungry = false, active = false;
+    public bool isHungry = false, active = false, inCombatBuilding = false, isCombat;
 
     public Vector3 nextPosition;
 
-    public int expForNextLvl, industrialExp, combatExp;
-
-    public IndustrialBuilding workplace;
+    public Building workplace;
 
     private void Start()
     {
@@ -57,7 +55,7 @@ public class Person : MonoBehaviour
 
     public void Click()
     {
-        ui.EnablePersonPanel(fullName, combatEfficiency, industrialEfficiency, isHungry);
+        ui.EnablePersonPanel(fullName, isHungry, isCombat);
     }
 
     public void SpawnAfterBuilding()
@@ -73,48 +71,11 @@ public class Person : MonoBehaviour
     public void Destroy()
     {
         if (workplace != null)
-            workplace.RemoveWorker(workplace.FindIndex(this));
+        {
+            IWorkplace iWorkplace = (IWorkplace)workplace;
+            iWorkplace.RemoveWorker(iWorkplace.FindIndex(this));
+        }
         personsManager.allPersons.Remove(this);
         Destroy(gameObject);
-    }
-
-
-
-    public void AddIndustrialExp(int value)
-    {
-        industrialExp += value;
-        if (industrialExp >= expForNextLvl)
-        {
-            industrialExp = 0;
-            EducateIndustrial();
-        }
-    }
-
-    public void AddCombatExp(int value)
-    {
-        combatExp += value;
-        if (combatExp >= expForNextLvl)
-        {
-            combatExp = 0;
-            EducateCombat();
-        }
-    }
-
-    public void EducateCombat()
-    {
-        if(combatEfficiency < 150)
-        {
-            combatEfficiency++;
-            industrialEfficiency--;
-        }
-    }
-
-    public void EducateIndustrial()
-    {
-        if (industrialEfficiency < 150)
-        {
-            combatEfficiency--;
-            industrialEfficiency++;
-        }
     }
 }

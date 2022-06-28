@@ -13,6 +13,8 @@ public class BuildingsGrid : MonoBehaviour
     Camera mainCamera;
     bool buildingPermit = true;
 
+    public BuildingsMode buildingsMode;
+
     private void Awake()
     {
         Instance = this;
@@ -20,12 +22,17 @@ public class BuildingsGrid : MonoBehaviour
         mainCamera = Camera.main;
     }
 
+    //Universal
+
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            FinishPlacingBuilding();
+            if (buildingsMode == BuildingsMode.Normal)
+                FinishPlacingBuilding();
+            ReturnFlyingBuilding();
         }
+
         if (Input.GetKeyDown(KeyCode.Q))
             flyingBuilding.RotateModel(-90);
         else if(Input.GetKeyDown(KeyCode.E))
@@ -47,18 +54,34 @@ public class BuildingsGrid : MonoBehaviour
 
                 if (x < 0 || x > gridSize.x - flyingBuilding.size.x) available = false;
                 if (y < 0 || y > gridSize.y - flyingBuilding.size.y) available = false;
-                if (available && !buildingPermit) available = false;
                 if (available && IsPlaceTaken(x, y)) available = false;
-                if (available && !flyingBuilding.HasResources()) available = false;
+                if (available && !buildingPermit) available = false;
 
                 flyingBuilding.transform.position = new Vector3(x, 0f, y);
-                flyingBuilding.SetTransparent(available);
 
-                if (available && Input.GetMouseButtonDown(0))
+                if (buildingsMode == BuildingsMode.Normal)
                 {
-                    Building lastBuilding = flyingBuilding;
-                    PlaceFlyingBuilding(x, y);
-                    flyingBuilding = Instantiate(lastBuilding);
+                    if (available && !flyingBuilding.HasResources()) available = false;
+                    
+                    flyingBuilding.SetTransparent(available);
+
+                    if (available && Input.GetMouseButtonDown(0))
+                    {
+                        Building lastBuilding = flyingBuilding;
+                        PlaceFlyingBuilding(x, y);
+                        flyingBuilding = Instantiate(lastBuilding);
+                    }
+                }
+                else if(buildingsMode == BuildingsMode.Movement)
+                {
+                    flyingBuilding.SetTransparent(available);
+
+                    if (available && Input.GetMouseButtonDown(0))
+                    {
+                        if(!cannotBePlaced)
+                            PlaceFlyingBuilding(x, y);
+                        cannotBePlaced = false;
+                    }
                 }
             }
         }
@@ -79,14 +102,7 @@ public class BuildingsGrid : MonoBehaviour
 
     void PlaceFlyingBuilding(int placeX, int placeY)
     {
-        for (int x = 0; x < flyingBuilding.size.x; x++)
-        {
-            for (int y = 0; y < flyingBuilding.size.y; y++)
-            {
-                grid[placeX + x, placeY + y] = flyingBuilding;
-            }
-        }
-
+        PlaceBuilding(flyingBuilding, placeX, placeY);
         flyingBuilding.SetNormal();
         flyingBuilding.Place();
         flyingBuilding = null;
@@ -111,14 +127,78 @@ public class BuildingsGrid : MonoBehaviour
         buildingPermit = permit;
     }
 
-    public void PlaceObelisk(Building obelisk, int placeX, int placeY)
+    public void PlaceBuilding(Building building, int placeX, int placeY)
     {
-        for (int x = 0; x < obelisk.size.x; x++)
+        for (int x = 0; x < building.size.x; x++)
         {
-            for (int y = 0; y < obelisk.size.y; y++)
-            {
-                grid[placeX + x, placeY + y] = obelisk;
-            }
+            for (int y = 0; y < building.size.y; y++)
+                grid[placeX + x, placeY + y] = building;
         }
     }
+
+    public void ClearGrid(Building building)
+    {
+        for (int x = 0; x < building.size.x; x++)
+        {
+            for (int y = 0; y < building.size.y; y++)
+                grid[(int)building.transform.position.x + x, (int)building.transform.position.z + y] = null;
+        }
+    }
+
+    //Destruction
+
+    public void SetBuildingsMode(BuildingsMode buildingsMode)
+    {
+        this.buildingsMode = buildingsMode;
+    }
+
+    //for button
+    public void SetNormalBuildingsMode()
+    {
+        buildingsMode = BuildingsMode.Normal;
+    }
+    public void SetDestructionBuildingsMode()
+    {
+        buildingsMode = BuildingsMode.Destruction;
+    }
+    public void SetMovementBuildingsMode()
+    {
+        buildingsMode = BuildingsMode.Movement;
+    }
+
+    //Movement
+
+    bool cannotBePlaced = false;
+    public void SetFlyingBuilding(Building building)
+    {
+        cannotBePlaced = true;
+        flyingBuilding = building;
+    }
+
+    public bool IsFlyingBuildingNull()
+    {
+        return flyingBuilding == null;
+    }
+
+    [SerializeField] Vector2Int buildingPlace = Vector2Int.zero;
+    public void SaveBuildingPlace(Building building)
+    {
+        buildingPlace = new Vector2Int((int)building.transform.position.x, (int)building.transform.position.z);
+    }
+
+    public void ReturnFlyingBuilding()
+    {
+        if (buildingsMode == BuildingsMode.Movement && flyingBuilding != null)
+        {
+            flyingBuilding.transform.position = new Vector3(buildingPlace.x, 0f, buildingPlace.y);
+            PlaceFlyingBuilding(buildingPlace.x, buildingPlace.y);
+        }
+    }
+}
+
+public enum BuildingsMode
+{ 
+    Normal,
+    Destruction,
+    Movement
 }

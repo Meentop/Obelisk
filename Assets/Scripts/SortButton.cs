@@ -13,7 +13,7 @@ public class SortButton : MonoBehaviour, IPointerClickHandler
 
     [SerializeField] SortBy sortBy;
 
-    public SortButtonGroup group;
+    [HideInInspector] public SortButtonGroup group;
     int curStatus = 0;
     Image image;
     UI ui;
@@ -35,15 +35,15 @@ public class SortButton : MonoBehaviour, IPointerClickHandler
             {
                 if (sortBy == SortBy.Hungry)
                     FeedOrderBy(i => i.person.isHungry);
-                else if (sortBy == SortBy.Industrial)
-                    FeedOrderBy(i => i.person.industrialEfficiency);
+                else if (sortBy == SortBy.Combat)
+                    FeedOrderBy(i => i.person.isCombat);
             }
             else
             {
                 if (sortBy == SortBy.Hungry)
                     ListOrderBy(i => i.person.isHungry);
-                else if (sortBy == SortBy.Industrial)
-                    ListOrderBy(i => i.person.industrialEfficiency);
+                else if (sortBy == SortBy.Combat)
+                    ListOrderBy(i => i.person.isCombat);
                 else if (sortBy == SortBy.Workplace)
                     ListOrderBy(i => i.person.workplace != null);
             }
@@ -84,25 +84,7 @@ public class SortButton : MonoBehaviour, IPointerClickHandler
             ui.SortFeedStatBlocks(newArray.Reverse().ToArray());
     }
 
-    void FeedOrderBy(System.Func<FeedStatBlock, float> operation)
-    {
-        FeedStatBlock[] newArray = group.feedStatBlocks.OrderByDescending(operation).ToArray();
-        if (curStatus == 1)
-            ui.SortFeedStatBlocks(newArray);
-        else if (curStatus == 2)
-            ui.SortFeedStatBlocks(newArray.Reverse().ToArray());
-    }
-
     void ListOrderBy(System.Func<PersonListStat, bool> operation)
-    {
-        PersonListStat[] newArray = group.personListStats.OrderByDescending(operation).ToArray();
-        if (curStatus == 1)
-            ui.SortPersonsList(newArray);
-        else if (curStatus == 2)
-            ui.SortPersonsList(newArray.Reverse().ToArray());
-    }
-
-    void ListOrderBy(System.Func<PersonListStat, float> operation)
     {
         PersonListStat[] newArray = group.personListStats.OrderByDescending(operation).ToArray();
         if (curStatus == 1)
@@ -117,6 +99,6 @@ public class SortButton : MonoBehaviour, IPointerClickHandler
 public enum SortBy 
 { 
     Hungry,
-    Industrial,
+    Combat,
     Workplace
 }

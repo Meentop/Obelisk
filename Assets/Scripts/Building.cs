@@ -7,23 +7,51 @@ public abstract class Building : MonoBehaviour
 {
     public string buildingsName;
 
-    Transform model;
+    Transform rotationPoint;
     protected Resources resources;
     protected UI ui;
+    protected BuildingsGrid buildingsGrid;
     [HideInInspector] public Outline outline;
 
     [SerializeField] List<Renderer> renderers = new List<Renderer>();
     public Vector2Int size = Vector2Int.one;
     
     [SerializeField] List<Cost> cost = new List<Cost>();
-    [SerializeField] int health;    
+
+    public bool isPortal;
 
     protected virtual void Start()
     {
         resources = Resources.Instance;
-        model = transform.GetChild(0);
+        rotationPoint = transform.GetChild(0);
         outline = GetComponent<Outline>();
+        buildingsGrid = BuildingsGrid.Instance;
         ui = UI.Instance;
+        nextRotation = rotationPoint.localRotation;
+    }
+
+    private void Update()
+    {
+        rotationPoint.localRotation = Quaternion.Lerp(rotationPoint.localRotation, nextRotation, 0.3f);
+    }
+
+    bool red = false;
+    private void OnMouseEnter()
+    {
+        if (ui.EnabledBuildingsGrid() && buildingsGrid.buildingsMode == BuildingsMode.Destruction && !isPortal)
+        {
+            SetTransparent(false);
+            red = true;
+        }
+    }
+
+    private void OnMouseExit()
+    {
+        if (red)
+        {
+            SetNormal();
+            red = false;
+        }
     }
 
     public void SetTransparent(bool available)
@@ -31,16 +59,12 @@ public abstract class Building : MonoBehaviour
         if (available)
         {
             foreach (Renderer renderer in renderers)
-            {
                 renderer.material.color = Color.green;
-            }
         }
         else
         {
             foreach (Renderer renderer in renderers)
-            {
                 renderer.material.color = Color.red;
-            }
         }
     }
 
@@ -52,9 +76,10 @@ public abstract class Building : MonoBehaviour
         }
     }
 
+    Quaternion nextRotation;
     public void RotateModel(float degrees)
     {
-        model.rotation = Quaternion.Euler(new Vector3(model.rotation.eulerAngles.x, model.rotation.eulerAngles.y + degrees, model.rotation.eulerAngles.z));
+        nextRotation = Quaternion.Euler(new Vector3(0, nextRotation.eulerAngles.y + degrees, 0));
     }
 
     public bool HasResources()
@@ -77,6 +102,12 @@ public abstract class Building : MonoBehaviour
 
     public abstract void Click();
 
+
+    public virtual void Destroy()
+    {
+        Destroy(this.gameObject);
+    }
+
     private void OnDrawGizmosSelected()
     {
         for (int x = 0; x < size.x; x++)
@@ -94,4 +125,15 @@ class Cost
 {
     public Resource resource;
     public int cost;
+}
+
+public interface IWorkplace
+{
+    public bool HasWorkplace();
+
+    public void AddWorker(GameObject person);
+
+    public Person RemoveWorker(int number);
+
+    public int FindIndex(Person person);
 }

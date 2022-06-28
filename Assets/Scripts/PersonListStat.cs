@@ -10,15 +10,17 @@ public class PersonListStat : PersonStatBlock
 
     [SerializeField] Text workplace;
 
-    public void ListInitialization(int number, Person person, Vector3 pointerPos, bool hungry, string name, string efficiency, string workplace)
+    public void ListInitialization(int number, Person person, bool hungry, string name, string workplace, bool combat)
     {
         this.number = number;
         this.person = person;
-        pointer.localPosition = pointerPos;
         this.hungry.SetActive(hungry);
         fullName.text = name;
-        this.efficiency.text = efficiency;
         this.workplace.text = workplace;
+        if (combat)
+            this.combat.sprite = combatImg;
+        else
+            this.combat.sprite = industrialImg;
     }
 
     public override void OnPointerDown(PointerEventData eventData)
@@ -26,7 +28,8 @@ public class PersonListStat : PersonStatBlock
         if (person.workplace != null)
         {
             ui.EnableStartUI();
-            person.workplace.RemoveWorker(number);
+            IWorkplace iWorkplace = (IWorkplace)person.workplace;
+            iWorkplace.RemoveWorker(number);
             person.SpawnAfterBuilding();
             ui.DisablePersonsList();
         }
@@ -34,13 +37,11 @@ public class PersonListStat : PersonStatBlock
 
     public override void OnPointerEnter(PointerEventData eventData)
     {
-        fullName.gameObject.SetActive(true);
-        efficiency.gameObject.SetActive(true);
+        
     }
 
     public override void OnPointerExit(PointerEventData eventData)
     {
-        fullName.gameObject.SetActive(false);
-        efficiency.gameObject.SetActive(false);
+        
     }
 }

@@ -8,13 +8,15 @@ public class PersonStatBlock : MonoBehaviour, IPointerEnterHandler, IPointerExit
 {
     protected int number;
 
-    IndustrialBuilding building;
-
-    [SerializeField] protected Transform pointer;
+    IWorkplace building;
 
     [SerializeField] protected GameObject hungry;
 
-    [SerializeField] protected Text fullName, efficiency;
+    [SerializeField] protected Text fullName;
+
+    [SerializeField] protected Sprite combatImg, industrialImg;
+
+    [SerializeField] protected Image combat;
 
     protected UI ui;
 
@@ -23,14 +25,16 @@ public class PersonStatBlock : MonoBehaviour, IPointerEnterHandler, IPointerExit
         ui = UI.Instance;
     }
 
-    public virtual void Initialization(int number, IndustrialBuilding building, Vector3 pointerPos, bool hungry, string name, string efficiency)
+    public virtual void Initialization(int number, IWorkplace building, bool hungry, string name, bool combat)
     {
         this.number = number;
         this.building = building;
-        pointer.localPosition = pointerPos;
         this.hungry.SetActive(hungry);
         fullName.text = name;
-        this.efficiency.text = efficiency;
+        if (combat)
+            this.combat.sprite = combatImg;
+        else
+            this.combat.sprite = industrialImg;
     }
 
     public virtual void OnPointerDown(PointerEventData eventData)
@@ -42,15 +46,11 @@ public class PersonStatBlock : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public virtual void OnPointerEnter(PointerEventData eventData)
     {
-        fullName.gameObject.SetActive(true);
-        efficiency.gameObject.SetActive(true);
         ui.SetCursorOnButton(true);
     }
 
     public virtual void OnPointerExit(PointerEventData eventData)
     {
-        fullName.gameObject.SetActive(false);
-        efficiency.gameObject.SetActive(false);
         ui.SetCursorOnButton(false);
     }
 }

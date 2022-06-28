@@ -24,6 +24,9 @@ public class UI : MonoBehaviour
     [Header("Warnings")]
     [SerializeField] GameObject noWorkplace;
     [SerializeField] GameObject storageIsFull;
+    [SerializeField] GameObject wrongPerson;
+    [SerializeField] GameObject noWayToEmpirePortal;
+    [SerializeField] GameObject selectType;
 
     [Header("Buildings Type")]
     [SerializeField] List<Button> buildingsTypeButtons = new List<Button>();
@@ -37,6 +40,7 @@ public class UI : MonoBehaviour
 
     [Header("PersonCreator")]
     [SerializeField] GameObject personCreatorMenu;
+    [SerializeField] GameObject apearanceMenu;
     [SerializeField] InputField fullName;
     [SerializeField] Image hairImg;
     [SerializeField] Image beardImg;
@@ -45,6 +49,8 @@ public class UI : MonoBehaviour
     [SerializeField] List<Sprite> hairs = new List<Sprite>();
     [SerializeField] List<Sprite> beards = new List<Sprite>();
     [SerializeField] List<Color> hairColors = new List<Color>();
+    [SerializeField] GameObject typeMenu;
+    [SerializeField] Button combatType, industrialType;
 
     [Header("Feed persons")]
     [SerializeField] GameObject feedPersonsMenu;
@@ -57,13 +63,16 @@ public class UI : MonoBehaviour
     [Header("Person")]
     [SerializeField] GameObject personPanel;
     [SerializeField] Text personName;
-    [SerializeField] Text personEffictiency;
     [SerializeField] GameObject hungry;
-    [SerializeField] Transform pointer;
+    [SerializeField] Sprite combatImg, industrialImg;
+    [SerializeField] Image personCombat;
 
-    [Header("Obelisk Panel")]
-    [SerializeField] GameObject obeliskPanel;
+    [Header("Empire portal Panel")]
+    [SerializeField] GameObject empirePortalPanel;
     [SerializeField] Text cyclesToNewPerson;
+
+    [Header("War portal Panel")]
+    [SerializeField] GameObject warPortalPanel;
 
     [Header("Storage Panel")]
     [SerializeField] GameObject storagePanel;
@@ -77,8 +86,28 @@ public class UI : MonoBehaviour
     [SerializeField] Image industrialResource;
     [SerializeField] Text industrialProduction;
     [SerializeField] Text industrialWorkersCount;
-    [SerializeField] GameObject personStat;
-    [SerializeField] Transform personStats;
+    [SerializeField] GameObject industrialPersonStat;
+    [SerializeField] Transform industrialPersonStats;
+
+    [Header("Fortification Panel")]
+    [SerializeField] GameObject fortificationPanel;
+    [SerializeField] Text fortificationName;
+
+    [Header("Combat Panel")]
+    [SerializeField] GameObject combatPanel;
+    [SerializeField] Text combatName;
+    [SerializeField] Text damage;
+    [SerializeField] Text attackSpeed;
+    [SerializeField] Text radius;
+    [SerializeField] Text rotateSpeed;
+    [SerializeField] Text projectileSpeed;
+    [SerializeField] GameObject combatPersonStat;
+    [SerializeField] Transform combatPersonStats;
+
+    [Header("Attack priority")]
+    [SerializeField] Text priorityText;
+    [SerializeField] Image priorityImage;
+    [SerializeField] Sprite[] prioritySprites = new Sprite[6];
 
     private void Awake()
     {
@@ -106,6 +135,7 @@ public class UI : MonoBehaviour
                 DisableAllBuildingPanels();
                 Disable(cells);
                 Enable(startUI);
+                SetCursorOnButton(false);
             }
         }
     }
@@ -176,6 +206,11 @@ public class UI : MonoBehaviour
         return startUI.activeInHierarchy;
     }
 
+    public bool EnabledBuildingsGrid()
+    {
+        return cells.activeInHierarchy;
+    }
+
     //Warnings
 
     public void NoWorkplace()
@@ -183,9 +218,24 @@ public class UI : MonoBehaviour
         StartCoroutine(ShowWarning(noWorkplace));
     }
 
+    public void WrongPerson()
+    {
+        StartCoroutine(ShowWarning(wrongPerson));
+    }
+
     public void StorageIsFull()
     {
         StartCoroutine(ShowWarning(storageIsFull));
+    }
+
+    public void SelectType()
+    {
+        StartCoroutine(ShowWarning(selectType));
+    }
+
+    public void SetNoWayToEmpirePortal(bool value)
+    {
+        noWayToEmpirePortal.SetActive(value);
     }
 
     IEnumerator ShowWarning(GameObject gameObject)
@@ -240,10 +290,10 @@ public class UI : MonoBehaviour
             if (persons[i].workplace != null)
             {
                 workplace = persons[i].workplace.buildingsName;
-                number = persons[i].workplace.FindIndex(persons[i]);
+                IWorkplace iWorcplace = (IWorkplace)persons[i].workplace;
+                number = iWorcplace.FindIndex(persons[i]);
             }
-            block.ListInitialization(number, persons[i], new Vector3((persons[i].combatEfficiency - 50) * 2, 0, 0), persons[i].isHungry, persons[i].fullName,
-                persons[i].industrialEfficiency + "/" + persons[i].combatEfficiency, workplace);
+            block.ListInitialization(number, persons[i], persons[i].isHungry, persons[i].fullName, workplace, persons[i].isCombat);
         }
     }
 
@@ -279,6 +329,9 @@ public class UI : MonoBehaviour
             Disable(startUI);
             Disable(cycles);
             Disable(resources);
+            combatType.interactable = true;
+            industrialType.interactable = true;
+            EnableApearanceMenu(true);
             Enable(personCreatorMenu);
         }
     }
@@ -316,6 +369,44 @@ public class UI : MonoBehaviour
         beardColorImg.color = hairColors[value];
     }
 
+    public void EnableApearanceMenu(bool value)
+    {
+        apearanceMenu.SetActive(value);
+        typeMenu.SetActive(!value);
+    }
+
+    public void ClickOnTypeButton(bool isCombat)
+    {
+        if (isCombat)
+        {
+            combatType.interactable = false;
+            industrialType.interactable = true;
+        }
+        else
+        {
+            combatType.interactable = true;
+            industrialType.interactable = false;
+        }
+    }
+
+    public bool GetTypeButtons()
+    {
+        return !combatType.interactable || !industrialType.interactable;
+    }
+
+    //0 - combat, 1 - industrial
+    public int GetPersonType()
+    {
+        if (!combatType.interactable)
+            return 0;
+        else if (!industrialType.interactable)
+            return 1;
+        else
+        {
+            SelectType();
+            return -1;
+        }
+    }
 
     public string GetName()
     {
@@ -370,8 +461,7 @@ public class UI : MonoBehaviour
             string workplace = "-";
             if (persons[i].workplace != null)
                  workplace = persons[i].workplace.buildingsName;
-            block.FeedInitialization(persons[i], new Vector3((persons[i].combatEfficiency - 50) * 2, 0, 0), persons[i].isHungry, persons[i].fullName,
-                persons[i].industrialEfficiency + "/" + persons[i].combatEfficiency, workplace);
+            block.FeedInitialization(persons[i], persons[i].isHungry, persons[i].fullName, workplace, persons[i].isCombat);
         }
     }
 
@@ -406,39 +496,52 @@ public class UI : MonoBehaviour
 
     //Person
 
-    public void EnablePersonPanel(string name, float combatEfficiency, float industrialEfficiency, bool hungry)
+    public void EnablePersonPanel(string name, bool hungry, bool combat)
     {
         if (EnabledStartUI())
         {
             DisableAllBuildingPanels();
             Enable(personPanel);
             personName.text = name;
-            personEffictiency.text = industrialEfficiency + "/" + combatEfficiency;
             this.hungry.SetActive(hungry);
-            pointer.localPosition = new Vector3((combatEfficiency - 50) * 2, 0, 0);
+            if (combat)
+                personCombat.sprite = combatImg;
+            else
+                personCombat.sprite = industrialImg;
         }
     }
 
     //Building
-    //Obelisk
+    //EmpirePortal
 
-    public void EnableObeliskPanel()
+    public void EnableEmpirePortalPanel()
     {
         if(EnabledStartUI())
         {
             DisableAllBuildingPanels();
-            Enable(obeliskPanel);
+            Enable(empirePortalPanel);
         }
     }
 
-    public bool IsObeliskPanelEnabled()
+    public bool IsEmpirePortalPanelEnabled()
     {
-        return obeliskPanel.activeSelf;
+        return empirePortalPanel.activeSelf;
     }
 
     public void SetCyclesToNewPerson(float cycles)
     {
         cyclesToNewPerson.text = "Cycles to a new person: " + cycles.ToString("0.##");
+    }
+
+    //War portal
+
+    public void EnableWarPortalPanel()
+    {
+        if (EnabledStartUI())
+        {
+            DisableAllBuildingPanels();
+            Enable(warPortalPanel);
+        }
     }
 
     //Storage
@@ -466,7 +569,7 @@ public class UI : MonoBehaviour
             industrialName.text = name;
             industrialResource.sprite = resourcesSprites[resource];
             industrialProduction.text = production.ToString("0.##");
-            SpawnPersonStatBlocks(building, persons, maxWorkers);
+            SpawnIndustrialStatBlocks(building, persons, maxWorkers);
         }
     }
 
@@ -475,20 +578,99 @@ public class UI : MonoBehaviour
         if (industrialPanel.activeInHierarchy)
         {
             industrialProduction.text = production.ToString("0.##");
-            SpawnPersonStatBlocks(building, persons, maxWorkers);
+            SpawnIndustrialStatBlocks(building, persons, maxWorkers);
         }
     }
 
-    void SpawnPersonStatBlocks(IndustrialBuilding building, List<Person> persons, int maxWorkers)
+    void SpawnIndustrialStatBlocks(IndustrialBuilding building, List<Person> persons, int maxWorkers)
     {
-        foreach (Transform child in personStats)
+        foreach (Transform child in industrialPersonStats)
             Destroy(child.gameObject);
         industrialWorkersCount.text = "Workers: " + persons.Count.ToString() + "/" + maxWorkers.ToString();
         for (int i = 0; i < persons.Count; i++)
         {
-            PersonStatBlock block = Instantiate(personStat, personStats).GetComponent<PersonStatBlock>();
-            block.Initialization(i, building, new Vector3((persons[i].combatEfficiency - 50) * 2, 0, 0),
-                persons[i].isHungry, persons[i].fullName, persons[i].industrialEfficiency + "/" + persons[i].combatEfficiency);
+            PersonStatBlock block = Instantiate(industrialPersonStat, industrialPersonStats).GetComponent<PersonStatBlock>();
+            block.Initialization(i, building, persons[i].isHungry, persons[i].fullName, persons[i].isCombat);
         }
+    }
+
+    //FortificationPanel
+
+    public void EnableFortificationPanel(string name)
+    {
+        if (EnabledStartUI())
+        {
+            DisableAllBuildingPanels();
+            Enable(fortificationPanel);
+            fortificationName.text = name;
+        }
+    }
+
+    //CombatPanel
+
+    CombatBuilding combatBuilding;
+
+    public void EnableCombatPanel(string name, IWorkplace building, Person person, int damage, float attackSpeed, float radius, float rotateSpeed, float projectileSpeed)
+    {
+        if (EnabledStartUI())
+        {
+            DisableAllBuildingPanels();
+            Enable(combatPanel);
+            combatName.text = name;
+            this.damage.text = "Damage: " + damage.ToString();
+            this.attackSpeed.text = "Attack speed: " + attackSpeed.ToString();
+            this.radius.text = "Radius: " + radius.ToString();
+            this.rotateSpeed.text = "Rotate speed: " + rotateSpeed.ToString();
+            this.projectileSpeed.text = "Projectile speed: " + projectileSpeed.ToString();
+            if (combatPersonStats.childCount > 0)
+                Destroy(combatPersonStats.GetChild(0).gameObject);
+            if (person != null)
+                SpawnCombatStatBlock(building, person);
+        }
+    }
+
+    public void SetBuildingForPriority(CombatBuilding building)
+    {
+        combatBuilding = building;
+        SetPriority((int)combatBuilding.priority);
+    }
+
+
+    public void UpdateCombatStatBlock(IWorkplace building, Person person, float attackSpeed)
+    {
+        if (combatPanel.activeInHierarchy)
+        {
+            this.attackSpeed.text = "Attack speed: " + attackSpeed.ToString();
+            SpawnCombatStatBlock(building, person);
+        }
+    }
+
+    void SpawnCombatStatBlock(IWorkplace building, Person person)
+    {
+        PersonStatBlock block = Instantiate(combatPersonStat, combatPersonStats).GetComponent<PersonStatBlock>();
+        block.Initialization(0, building, person.isHungry, person.fullName, person.isCombat);
+    }
+
+    void SetPriority(int priority)
+    {
+        priorityImage.sprite = prioritySprites[priority];
+        combatBuilding.priority = (Priority)priority;
+        priorityText.text = combatBuilding.priority.ToString();
+    }
+
+    public void NextPriority()
+    {
+        int i = (int)combatBuilding.priority + 1;
+        if (i > 5)
+            i = 0;
+        SetPriority(i);
+    }
+
+    public void LastPriority()
+    {
+        int i = (int)combatBuilding.priority - 1;
+        if (i < 0)
+            i = 5;
+        SetPriority(i);
     }
 }

@@ -9,7 +9,7 @@
     <ProductVersion>10.0.20506</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <RootNamespace></RootNamespace>
-    <ProjectGuid>{7E89957F-F1BE-553C-5593-44431FDAB832}</ProjectGuid>
+    <ProjectGuid>{33E09831-63B8-39B3-4563-0EB81EC82D11}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <AssemblyName>Assembly-CSharp</AssemblyName>
@@ -57,26 +57,32 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\Outline.cs" />
+    <Compile Include="Assets\Scripts\Enemy.cs" />
     <Compile Include="Assets\Scripts\Building.cs" />
+    <Compile Include="Assets\Scripts\WarPortal.cs" />
     <Compile Include="Assets\Scripts\OutlineManager.cs" />
     <Compile Include="Assets\Scripts\CameraMove.cs" />
     <Compile Include="Assets\Scripts\IndustrialBuilding.cs" />
     <Compile Include="Assets\Scripts\Person.cs" />
     <Compile Include="Assets\Scripts\BuildingsGrid.cs" />
     <Compile Include="Assets\Scripts\PersonStatBlock.cs" />
-    <Compile Include="Assets\Scripts\Obelisk.cs" />
+    <Compile Include="Assets\Scripts\PathChecker.cs" />
+    <Compile Include="Assets\Scripts\ArcherTower.cs" />
+    <Compile Include="Assets\Scripts\EmpirePortal.cs" />
     <Compile Include="Assets\Scripts\FeedStatBlock.cs" />
+    <Compile Include="Assets\Scripts\SortButtonGroup.cs" />
     <Compile Include="Assets\Scripts\SortButton.cs" />
     <Compile Include="Assets\Scripts\MouseRay.cs" />
     <Compile Include="Assets\Scripts\Resources.cs" />
     <Compile Include="Assets\Scripts\BuildingButton.cs" />
+    <Compile Include="Assets\Scripts\CombatBuilding.cs" />
     <Compile Include="Assets\Scripts\Storage.cs" />
     <Compile Include="Assets\Scripts\Cycles.cs" />
+    <Compile Include="Assets\Scripts\Fortification.cs" />
     <Compile Include="Assets\Scripts\PersonsManager.cs" />
+    <Compile Include="Assets\Scripts\PersonListStat.cs" />
     <Compile Include="Assets\Scripts\PersonCreator.cs" />
     <Compile Include="Assets\Scripts\UI.cs" />
-    <Compile Include="Assets\Scripts\SortButtonGroup.cs" />
-    <Compile Include="Assets\Scripts\PersonListStat.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Shaders\OutlineMask.shader" />

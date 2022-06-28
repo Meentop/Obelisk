@@ -7,7 +7,7 @@ public class PersonCreator : MonoBehaviour
     [HideInInspector] public static PersonCreator Instance;
 
     UI ui;
-    Obelisk obelisk;
+    EmpirePortal empirePortal;
     [SerializeField] GameObject personPrefab;
     [SerializeField] Transform personSpawnPoint;
     Person person;
@@ -31,7 +31,7 @@ public class PersonCreator : MonoBehaviour
 
     private void Start()
     {
-        obelisk = Obelisk.Instance;
+        empirePortal = EmpirePortal.Instance;
     }
 
     public void StartCreate()
@@ -128,13 +128,25 @@ public class PersonCreator : MonoBehaviour
         nameWarning.SetActive(ui.GetName().Length > 30);
     }
 
+    public void ConfirmAppearance()
+    {
+        if (ui.GetName().Length <= 30)
+        {
+            ui.EnableApearanceMenu(false);
+            person.gameObject.SetActive(false);
+        }
+    }
+
     public void Confirm()
     {
-        if(ui.GetName().Length <= 30)
+        if (ui.GetPersonType() == 0)
+            person.isCombat = true;
+        if (ui.GetTypeButtons())
         {
             ui.DisablePersonCreatorMenu();
             person.fullName = ui.GetName();
-            obelisk.EndCreating(person.gameObject);
+            person.gameObject.SetActive(true);
+            empirePortal.EndCreating(person.gameObject);
             Destroy(person.gameObject);
         }
     }

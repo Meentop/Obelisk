@@ -10,6 +10,7 @@ public class MouseRay : MonoBehaviour
 
     UI ui;
     OutlineManager outlineManager;
+    BuildingsGrid buildingsGrid;
 
     private void Awake()
     {
@@ -20,6 +21,7 @@ public class MouseRay : MonoBehaviour
     {
         ui = UI.Instance;
         outlineManager = OutlineManager.Instance;
+        buildingsGrid = BuildingsGrid.Instance;
     }
 
     public Vector3 startMousePos, curMousePos;
@@ -42,8 +44,20 @@ public class MouseRay : MonoBehaviour
             }
             else if (Physics.Raycast(ray, out hit, Mathf.Infinity, building))
             {
-                hit.collider.GetComponent<Building>().Click();
-                outlineManager.EnableOutline(hit.collider.GetComponent<Building>().outline);
+                Building building = hit.collider.GetComponent<Building>();
+                building.Click();
+                outlineManager.EnableOutline(building.outline);
+                if (ui.EnabledBuildingsGrid() && buildingsGrid.buildingsMode == BuildingsMode.Destruction && !building.isPortal)
+                {
+                    buildingsGrid.ClearGrid(building);
+                    hit.collider.GetComponent<Building>().Destroy();
+                }
+                else if (ui.EnabledBuildingsGrid() && buildingsGrid.buildingsMode == BuildingsMode.Movement && !building.isPortal && buildingsGrid.IsFlyingBuildingNull())
+                {
+                    buildingsGrid.SetFlyingBuilding(building);
+                    buildingsGrid.ClearGrid(building);
+                    buildingsGrid.SaveBuildingPlace(building);
+                }
             }
             else if (groundPlane.Raycast(ray, out float position))
             {
@@ -64,23 +78,35 @@ public class MouseRay : MonoBehaviour
         }
         else if(Input.GetMouseButtonUp(0))
         {
-            if (Physics.Raycast(ray, out hit, Mathf.Infinity, person) && Vector3.Distance(startMousePos, curMousePos) == 0f)
+            if (Physics.Raycast(ray, out hit, Mathf.Infinity, person) && Vector3.Distance(startMousePos, curMousePos) == 0f && ui.EnabledStartUI())
             {
-                grabPerson.Click();
-                outlineManager.EnableOutline(grabPerson.GetComponent<Outline>());
+                if (!grabPerson.inCombatBuilding)
+                {
+                    grabPerson.Click();
+                    outlineManager.EnableOutline(grabPerson.GetComponent<Outline>());
+                }
             }
-            else
+            else if(Physics.Raycast(ray, out hit, Mathf.Infinity, person) && Vector3.Distance(startMousePos, curMousePos) != 0f && ui.EnabledStartUI())
             {
                 if (grabPerson != null && Physics.Raycast(ray, out hit, Mathf.Infinity, building))
                 {
-                    if (hit.collider.GetComponent<IndustrialBuilding>().HasWorkplace())
+                    if (hit.collider.GetComponent<Building>() is IWorkplace)
                     {
-                        hit.collider.GetComponent<IndustrialBuilding>().Click();
-                        outlineManager.EnableOutline(hit.collider.GetComponent<Outline>());
-                        hit.collider.GetComponent<IndustrialBuilding>().AddWorker(grabPerson.gameObject);
+                        IWorkplace workplace = (IWorkplace)hit.collider.GetComponent<Building>();
+                        if (workplace.HasWorkplace())
+                        {
+                            if (hit.collider.GetComponent<IndustrialBuilding>() && !grabPerson.isCombat || hit.collider.GetComponent<CombatBuilding>() && grabPerson.isCombat)
+                            {
+                                hit.collider.GetComponent<Building>().Click();
+                                outlineManager.EnableOutline(hit.collider.GetComponent<Outline>());
+                                workplace.AddWorker(grabPerson.gameObject);
+                            }
+                            else
+                                ui.WrongPerson();
+                        }
+                        else
+                            ui.NoWorkplace();
                     }
-                    else
-                        ui.NoWorkplace();
                 }
             }
             startMousePos = Vector3.zero;

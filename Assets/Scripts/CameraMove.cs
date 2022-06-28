@@ -13,6 +13,8 @@ public class CameraMove : MonoBehaviour
     [SerializeField] float minZoom;
     [SerializeField] float maxZoom, zoomLerpSpeed;
 
+    [SerializeField] float leftLimit, rightLimit, upperLimit, bottomLimit;
+
     private void Awake()
     {
         Instance = this;
@@ -42,7 +44,9 @@ public class CameraMove : MonoBehaviour
         else if (Input.GetMouseButton(1) || Input.GetMouseButton(2))
         {
             deltaMousePos = startMousePos - Input.mousePosition;
-            transform.localPosition = new Vector3(startPos.x + deltaMousePos.x / Screen.width * widthSize, 0, startPos.z + deltaMousePos.y / Screen.height * heigthSize);
+            Vector3 pos = new Vector3(startPos.x + deltaMousePos.x / Screen.width * widthSize, 0, startPos.z + deltaMousePos.y / Screen.height * heigthSize);
+            pos = new Vector3(Mathf.Clamp(pos.x, leftLimit, rightLimit), 0f, Mathf.Clamp(pos.z, bottomLimit, upperLimit));
+            transform.localPosition = pos;
         }
     }
 
@@ -70,4 +74,8 @@ public class CameraMove : MonoBehaviour
         topCamera.orthographicSize = previousZoom;
         blockedZoom = false;
     }
+
+    //limited camera
+
+
 }

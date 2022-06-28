@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class IndustrialBuilding : Building
+public class IndustrialBuilding : Building, IWorkplace
 {
     Cycles cycles;
 
@@ -22,6 +22,15 @@ public class IndustrialBuilding : Building
     public override void Click()
     {
         ui.EnableIndustrialPanel(this, buildingsName, (int)resource, AllProduction(), workers, workersCount);
+    }
+
+    public override void Destroy()
+    {
+        for (int i = 0; i < workers.Count; i++)
+        {
+            Instantiate(RemoveWorker(i).gameObject, transform.position, Quaternion.identity);
+        }
+        base.Destroy();
     }
 
     public bool HasWorkplace()
@@ -57,7 +66,7 @@ public class IndustrialBuilding : Building
         float production = 0;
         foreach (Person person in workers)
         {
-            production += baseProduction * ((person.industrialEfficiency + person.efficiencyModifier) / 100);
+            production += baseProduction + (baseProduction * (person.efficiencyModifier / 100));
         }
         return production;
     }
@@ -80,13 +89,12 @@ public class IndustrialBuilding : Building
     {
         while (true)
         {
-            float productionInCycle = baseProduction * ((workers[FindIndex(person)].industrialEfficiency + workers[FindIndex(person)].efficiencyModifier) / 100);
+            float productionInCycle = baseProduction + (baseProduction * (person.efficiencyModifier / 100));
             float timeForOneProduct = cycles.cycleTime / productionInCycle;
             float curTime = 0;
             while (curTime < timeForOneProduct)
             {
                 yield return new WaitForSecondsRealtime(0.1f);
-                workers[FindIndex(person)].AddIndustrialExp(cycles.timeScale);
                 curTime += 0.1f * cycles.timeScale;
                 if (curTime >= timeForOneProduct)
                     resources.AddResource(resource, 1);

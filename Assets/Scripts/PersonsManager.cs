@@ -51,7 +51,6 @@ public class PersonsManager : MonoBehaviour
     {
         if (ui.FinishFeed())
         {
-
             resources.TakeResource(Resource.Food, resources.GetResource(Resource.Food));
             cycles.SetPreviousTimeScale();
             cameraMove.UnblockedZoom();

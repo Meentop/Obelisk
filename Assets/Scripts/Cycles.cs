@@ -8,15 +8,23 @@ public class Cycles : MonoBehaviour
 
     public int cycle { get; private set; } = 0;
     public int cycleTime = 240;
-    public int timeScale { get; private set; } = 99;
+    public int timeScale { get; private set; } = 1;
 
     public float curCycleTime/* { get; private set; }*/ = 0;
-    bool blockedPause = false;
+    public bool blockedPause { get; private set; } = false;
 
     [SerializeField] Transform arrow;
 
+    [Header("Day/Night")]
+    [SerializeField] Light mySun;
+    [SerializeField] Light myMoon;
+    [SerializeField] AnimationCurve sunCurve;
+    [SerializeField] AnimationCurve moonCurve;
+    float sunIntensity;
+    float moonIntensity;
+
     UI ui;
-    Obelisk obelisk;
+    EmpirePortal empirePortal;
     PersonsManager personsManager;
 
     private void Awake()
@@ -27,10 +35,13 @@ public class Cycles : MonoBehaviour
     private void Start()
     {
         ui = UI.Instance;
-        obelisk = Obelisk.Instance;
+        empirePortal = EmpirePortal.Instance;
         personsManager = PersonsManager.Instance;
         StartCoroutine(CycleCount());
         ui.UpdateCycleNumber(cycle);
+
+        sunIntensity = mySun.intensity;
+        moonIntensity = myMoon.intensity;
     }
 
     int previousTimeScale = 1;
@@ -42,6 +53,9 @@ public class Cycles : MonoBehaviour
             SetPause();
         else if (Input.GetKeyDown(KeyCode.Space) && timeScale == 0 && !blockedPause)
             SetPreviousTimeScale();
+
+        SetLightsRotation();
+        SetLightsIntensity();
     }
 
     IEnumerator CycleCount()
@@ -54,8 +68,8 @@ public class Cycles : MonoBehaviour
             {
                 cycle++;
                 personsManager.TakeFood();
-                if (cycle % obelisk.personSpawnTime == 0)
-                    obelisk.AvailableNewPerson();
+                if (cycle % empirePortal.personSpawnTime == 0)
+                    empirePortal.AvailableNewPerson();
                 ui.UpdateCycleNumber(cycle);
                 curCycleTime = 0;
             }
@@ -69,7 +83,11 @@ public class Cycles : MonoBehaviour
 
     public void SetTimeScale(int timeScale)
     {
-        this.timeScale = timeScale;
+        if (!blockedPause)
+        {
+            this.timeScale = timeScale;
+            ui.SetTimeSpeedButton(timeScale);
+        }
     }
 
     public void SetPause()
@@ -81,14 +99,30 @@ public class Cycles : MonoBehaviour
 
     public void SetPreviousTimeScale()
     {
+        blockedPause = false;
         SetTimeScale(previousTimeScale);
         ui.SetTimeSpeedButton(previousTimeScale);
-        blockedPause = false;
     }
 
     public void SetBlockedPause()
     {
         SetPause();
         blockedPause = true;
+    }
+
+    //Day or Night
+
+    void SetLightsRotation()
+    {
+        Quaternion nextSunRotation = Quaternion.Euler(curCycleTime / cycleTime * 360, -45, 0);
+        mySun.transform.localRotation = Quaternion.Lerp(mySun.transform.localRotation, nextSunRotation, 0.125f);
+        Quaternion nextMoonRotation = Quaternion.Euler(curCycleTime / cycleTime * 360 + 180f, -45, 0);
+        myMoon.transform.localRotation = Quaternion.Lerp(myMoon.transform.localRotation, nextMoonRotation, 0.125f);
+    }
+
+    void SetLightsIntensity()
+    {
+        mySun.intensity = sunIntensity * sunCurve.Evaluate(curCycleTime / cycleTime);
+        myMoon.intensity = moonIntensity * moonCurve.Evaluate(curCycleTime / cycleTime);
     }
 }
