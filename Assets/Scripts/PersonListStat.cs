@@ -10,17 +10,13 @@ public class PersonListStat : PersonStatBlock
 
     [SerializeField] Text workplace;
 
-    public void ListInitialization(int number, Person person, bool hungry, string name, string workplace, bool combat)
+    public void ListInitialization(int number, Person person, bool hungry, string name, string workplace)
     {
         this.number = number;
         this.person = person;
         this.hungry.SetActive(hungry);
         fullName.text = name;
         this.workplace.text = workplace;
-        if (combat)
-            this.combat.sprite = combatImg;
-        else
-            this.combat.sprite = industrialImg;
     }
 
     public override void OnPointerDown(PointerEventData eventData)

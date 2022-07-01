@@ -8,7 +8,7 @@ public class Cycles : MonoBehaviour
 
     public int cycle { get; private set; } = 0;
     public int cycleTime = 240;
-    public int timeScale { get; private set; } = 1;
+    public int timeScale { get; private set; } = 99;
 
     public float curCycleTime/* { get; private set; }*/ = 0;
     public bool blockedPause { get; private set; } = false;
@@ -26,6 +26,7 @@ public class Cycles : MonoBehaviour
     UI ui;
     EmpirePortal empirePortal;
     PersonsManager personsManager;
+    EnemyAttacks enemyAttacks;
 
     private void Awake()
     {
@@ -37,6 +38,7 @@ public class Cycles : MonoBehaviour
         ui = UI.Instance;
         empirePortal = EmpirePortal.Instance;
         personsManager = PersonsManager.Instance;
+        enemyAttacks = EnemyAttacks.Instance;
         StartCoroutine(CycleCount());
         ui.UpdateCycleNumber(cycle);
 
@@ -44,7 +46,7 @@ public class Cycles : MonoBehaviour
         moonIntensity = myMoon.intensity;
     }
 
-    int previousTimeScale = 1;
+    public int previousTimeScale = 1;
 
     private void Update()
     {
@@ -67,6 +69,7 @@ public class Cycles : MonoBehaviour
             if(curCycleTime >= cycleTime)
             {
                 cycle++;
+                enemyAttacks.CheckEnemyAttack();
                 personsManager.TakeFood();
                 if (cycle % empirePortal.personSpawnTime == 0)
                     empirePortal.AvailableNewPerson();
@@ -92,9 +95,12 @@ public class Cycles : MonoBehaviour
 
     public void SetPause()
     {
-        previousTimeScale = timeScale;
-        SetTimeScale(0);
-        ui.SetTimeSpeedButton(0);
+        if (timeScale != 0)
+        {
+            previousTimeScale = timeScale;
+            SetTimeScale(0);
+            ui.SetTimeSpeedButton(0);
+        }
     }
 
     public void SetPreviousTimeScale()

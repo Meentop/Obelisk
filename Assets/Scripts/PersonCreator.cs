@@ -128,26 +128,11 @@ public class PersonCreator : MonoBehaviour
         nameWarning.SetActive(ui.GetName().Length > 30);
     }
 
-    public void ConfirmAppearance()
-    {
-        if (ui.GetName().Length <= 30)
-        {
-            ui.EnableApearanceMenu(false);
-            person.gameObject.SetActive(false);
-        }
-    }
-
     public void Confirm()
     {
-        if (ui.GetPersonType() == 0)
-            person.isCombat = true;
-        if (ui.GetTypeButtons())
-        {
-            ui.DisablePersonCreatorMenu();
-            person.fullName = ui.GetName();
-            person.gameObject.SetActive(true);
-            empirePortal.EndCreating(person.gameObject);
-            Destroy(person.gameObject);
-        }
+        ui.DisablePersonCreatorMenu();
+        person.fullName = ui.GetName();
+        empirePortal.EndCreating(person.gameObject);
+        Destroy(person.gameObject);
     }
 }

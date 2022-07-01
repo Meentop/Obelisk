@@ -26,6 +26,7 @@ public class MouseRay : MonoBehaviour
 
     public Vector3 startMousePos, curMousePos;
     public Person grabPerson;
+    public Building selectedBulding = null;
 
     private void Update()
     {
@@ -46,13 +47,14 @@ public class MouseRay : MonoBehaviour
             {
                 Building building = hit.collider.GetComponent<Building>();
                 building.Click();
+                selectedBulding = building;
                 outlineManager.EnableOutline(building.outline);
-                if (ui.EnabledBuildingsGrid() && buildingsGrid.buildingsMode == BuildingsMode.Destruction && !building.isPortal)
+                if (ui.EnabledBuildingsGrid() && buildingsGrid.buildingsMode == BuildingsMode.Destruction && !building.undestroyable)
                 {
                     buildingsGrid.ClearGrid(building);
                     hit.collider.GetComponent<Building>().Destroy();
                 }
-                else if (ui.EnabledBuildingsGrid() && buildingsGrid.buildingsMode == BuildingsMode.Movement && !building.isPortal && buildingsGrid.IsFlyingBuildingNull())
+                else if (ui.EnabledBuildingsGrid() && buildingsGrid.buildingsMode == BuildingsMode.Movement && !building.unmovable && buildingsGrid.IsFlyingBuildingNull())
                 {
                     buildingsGrid.SetFlyingBuilding(building);
                     buildingsGrid.ClearGrid(building);
@@ -61,7 +63,7 @@ public class MouseRay : MonoBehaviour
             }
             else if (groundPlane.Raycast(ray, out float position))
             {
-                ui.ClickOnGround();
+                ui.DisableAllPanels();
                 outlineManager.DisableOutline();
             }
         }
@@ -95,14 +97,10 @@ public class MouseRay : MonoBehaviour
                         IWorkplace workplace = (IWorkplace)hit.collider.GetComponent<Building>();
                         if (workplace.HasWorkplace())
                         {
-                            if (hit.collider.GetComponent<IndustrialBuilding>() && !grabPerson.isCombat || hit.collider.GetComponent<CombatBuilding>() && grabPerson.isCombat)
-                            {
-                                hit.collider.GetComponent<Building>().Click();
-                                outlineManager.EnableOutline(hit.collider.GetComponent<Outline>());
-                                workplace.AddWorker(grabPerson.gameObject);
-                            }
-                            else
-                                ui.WrongPerson();
+                            hit.collider.GetComponent<Building>().Click();
+                            outlineManager.EnableOutline(hit.collider.GetComponent<Outline>());
+                            selectedBulding = hit.collider.GetComponent<Building>();
+                            workplace.AddWorker(grabPerson.gameObject);
                         }
                         else
                             ui.NoWorkplace();
@@ -125,5 +123,10 @@ public class MouseRay : MonoBehaviour
             return ray.GetPoint(position);
         else
             return Vector3.zero;
+    }
+
+    public void DestroySelectedBuilding()
+    {
+        selectedBulding.Destroy();
     }
 }

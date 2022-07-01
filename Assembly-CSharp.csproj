@@ -64,6 +64,7 @@
     <Compile Include="Assets\Scripts\CameraMove.cs" />
     <Compile Include="Assets\Scripts\IndustrialBuilding.cs" />
     <Compile Include="Assets\Scripts\Person.cs" />
+    <Compile Include="Assets\Scripts\EnemyAttacks.cs" />
     <Compile Include="Assets\Scripts\BuildingsGrid.cs" />
     <Compile Include="Assets\Scripts\PersonStatBlock.cs" />
     <Compile Include="Assets\Scripts\PathChecker.cs" />
@@ -80,9 +81,11 @@
     <Compile Include="Assets\Scripts\Cycles.cs" />
     <Compile Include="Assets\Scripts\Fortification.cs" />
     <Compile Include="Assets\Scripts\PersonsManager.cs" />
+    <Compile Include="Assets\Scripts\Grounded.cs" />
     <Compile Include="Assets\Scripts\PersonListStat.cs" />
     <Compile Include="Assets\Scripts\PersonCreator.cs" />
     <Compile Include="Assets\Scripts\UI.cs" />
+    <Compile Include="Assets\Scripts\WorldCanvaz.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Shaders\OutlineMask.shader" />

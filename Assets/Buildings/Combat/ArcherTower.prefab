@@ -214,6 +214,9 @@ MonoBehaviour:
   cost:
   - resource: 1
     cost: 20
+  - resource: 4
+    cost: 1
+  undestroyable: 0
   damage: 10
   baseAttackSpeed: 10
   radius: 5

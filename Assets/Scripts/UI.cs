@@ -13,20 +13,20 @@ public class UI : MonoBehaviour
     [SerializeField] List<GameObject> necessaryPanels = new List<GameObject>();
     [SerializeField] GameObject cells;
 
-    [SerializeField] Text[] resourceTexts = new Text[4];
+    [SerializeField] Text[] resourceTexts = new Text[5];
 
     [SerializeField] Text cycleNumber;    
 
     [SerializeField] List<Button> speedButtons = new List<Button>();
 
-    [SerializeField] Sprite[] resourcesSprites = new Sprite[4];
+    [SerializeField] Sprite[] resourcesSprites = new Sprite[5];
 
     [Header("Warnings")]
     [SerializeField] GameObject noWorkplace;
     [SerializeField] GameObject storageIsFull;
-    [SerializeField] GameObject wrongPerson;
     [SerializeField] GameObject noWayToEmpirePortal;
-    [SerializeField] GameObject selectType;
+    [SerializeField] GameObject enemyNear;
+    [SerializeField] GameObject attackRepulsed;
 
     [Header("Buildings Type")]
     [SerializeField] List<Button> buildingsTypeButtons = new List<Button>();
@@ -49,8 +49,6 @@ public class UI : MonoBehaviour
     [SerializeField] List<Sprite> hairs = new List<Sprite>();
     [SerializeField] List<Sprite> beards = new List<Sprite>();
     [SerializeField] List<Color> hairColors = new List<Color>();
-    [SerializeField] GameObject typeMenu;
-    [SerializeField] Button combatType, industrialType;
 
     [Header("Feed persons")]
     [SerializeField] GameObject feedPersonsMenu;
@@ -64,15 +62,17 @@ public class UI : MonoBehaviour
     [SerializeField] GameObject personPanel;
     [SerializeField] Text personName;
     [SerializeField] GameObject hungry;
-    [SerializeField] Sprite combatImg, industrialImg;
-    [SerializeField] Image personCombat;
 
-    [Header("Empire portal Panel")]
+    [Header("Empire portal")]
     [SerializeField] GameObject empirePortalPanel;
     [SerializeField] Text cyclesToNewPerson;
+    [SerializeField] GameObject empirePortalHP;
+    [SerializeField] Text empirePortalHPText;
 
-    [Header("War portal Panel")]
+    [Header("War portal")]
     [SerializeField] GameObject warPortalPanel;
+    [SerializeField] GameObject[] warPortalsUI = new GameObject[4];
+    [SerializeField] Text[] timeToAttackTexts = new Text[4];
 
     [Header("Storage Panel")]
     [SerializeField] GameObject storagePanel;
@@ -109,6 +109,8 @@ public class UI : MonoBehaviour
     [SerializeField] Image priorityImage;
     [SerializeField] Sprite[] prioritySprites = new Sprite[6];
 
+    EnemyAttacks enemyAttacks;
+
     private void Awake()
     {
         Instance = this;
@@ -117,6 +119,7 @@ public class UI : MonoBehaviour
     private void Start()
     {
         SetTimeSpeedButton(1);
+        enemyAttacks = EnemyAttacks.Instance;
     }
 
     private void Update()
@@ -134,7 +137,8 @@ public class UI : MonoBehaviour
                 DisableAllMenu();
                 DisableAllBuildingPanels();
                 Disable(cells);
-                Enable(startUI);
+                if(!enemyAttacks.IsEnemyAttack())
+                    Enable(startUI);
                 SetCursorOnButton(false);
             }
         }
@@ -163,6 +167,16 @@ public class UI : MonoBehaviour
         Enable(startUI);
     }
 
+    public void DisnableStartUI()
+    {
+        Disable(startUI);
+    }
+
+    public void DisableCells()
+    {
+        Disable(cells);
+    }
+
 
     public void Enable(GameObject element)
     {
@@ -189,7 +203,7 @@ public class UI : MonoBehaviour
     }
 
     public bool cursorOnButton { get; private set; } = false;
-    public void ClickOnGround()
+    public void DisableAllPanels()
     {
         if (startUI.activeInHierarchy && !cursorOnButton)
             DisableAllBuildingPanels();
@@ -218,24 +232,24 @@ public class UI : MonoBehaviour
         StartCoroutine(ShowWarning(noWorkplace));
     }
 
-    public void WrongPerson()
-    {
-        StartCoroutine(ShowWarning(wrongPerson));
-    }
-
     public void StorageIsFull()
     {
         StartCoroutine(ShowWarning(storageIsFull));
     }
 
-    public void SelectType()
-    {
-        StartCoroutine(ShowWarning(selectType));
-    }
-
     public void SetNoWayToEmpirePortal(bool value)
     {
         noWayToEmpirePortal.SetActive(value);
+    }
+
+    public void SetEnemyNearText(bool value)
+    {
+        enemyNear.SetActive(value);
+    }
+
+    public void AttackRepulsed()
+    {
+        StartCoroutine(ShowWarning(attackRepulsed));
     }
 
     IEnumerator ShowWarning(GameObject gameObject)
@@ -293,7 +307,7 @@ public class UI : MonoBehaviour
                 IWorkplace iWorcplace = (IWorkplace)persons[i].workplace;
                 number = iWorcplace.FindIndex(persons[i]);
             }
-            block.ListInitialization(number, persons[i], persons[i].isHungry, persons[i].fullName, workplace, persons[i].isCombat);
+            block.ListInitialization(number, persons[i], persons[i].isHungry, persons[i].fullName, workplace);
         }
     }
 
@@ -313,10 +327,12 @@ public class UI : MonoBehaviour
 
     public void UpdateResourceNumber(Resource resource, float resourceNumber, int capasityNumber)
     {
-        if(resource == Resource.ResearchPoint)
-            resourceTexts[(int)resource].text = resourceNumber.ToString();
-        else
-            resourceTexts[(int)resource].text = resourceNumber.ToString() + "/" + capasityNumber.ToString();
+        resourceTexts[(int)resource].text = resourceNumber.ToString() + "/" + capasityNumber.ToString();
+    }
+
+    public void UpdateResourceNumber(Resource resource, float resourceNumber)
+    {
+        resourceTexts[(int)resource].text = resourceNumber.ToString();
     }
 
     //PersonCreator
@@ -329,8 +345,6 @@ public class UI : MonoBehaviour
             Disable(startUI);
             Disable(cycles);
             Disable(resources);
-            combatType.interactable = true;
-            industrialType.interactable = true;
             EnableApearanceMenu(true);
             Enable(personCreatorMenu);
         }
@@ -338,7 +352,8 @@ public class UI : MonoBehaviour
 
     public void DisablePersonCreatorMenu()
     {
-        Enable(startUI);
+        if(!enemyAttacks.IsEnemyAttack())
+            Enable(startUI);
         Enable(cycles);
         Enable(resources);
         Disable(personCreatorMenu);
@@ -372,40 +387,6 @@ public class UI : MonoBehaviour
     public void EnableApearanceMenu(bool value)
     {
         apearanceMenu.SetActive(value);
-        typeMenu.SetActive(!value);
-    }
-
-    public void ClickOnTypeButton(bool isCombat)
-    {
-        if (isCombat)
-        {
-            combatType.interactable = false;
-            industrialType.interactable = true;
-        }
-        else
-        {
-            combatType.interactable = true;
-            industrialType.interactable = false;
-        }
-    }
-
-    public bool GetTypeButtons()
-    {
-        return !combatType.interactable || !industrialType.interactable;
-    }
-
-    //0 - combat, 1 - industrial
-    public int GetPersonType()
-    {
-        if (!combatType.interactable)
-            return 0;
-        else if (!industrialType.interactable)
-            return 1;
-        else
-        {
-            SelectType();
-            return -1;
-        }
     }
 
     public string GetName()
@@ -437,7 +418,8 @@ public class UI : MonoBehaviour
                 transform.GetComponent<FeedStatBlock>().FinishFeed();
                 Destroy(transform.gameObject);
             }
-            Enable(startUI);
+            if(!enemyAttacks.IsEnemyAttack())
+                Enable(startUI);
             Enable(cycles);
             Disable(feedPersonsMenu);
             fedPersons = 0;
@@ -461,7 +443,7 @@ public class UI : MonoBehaviour
             string workplace = "-";
             if (persons[i].workplace != null)
                  workplace = persons[i].workplace.buildingsName;
-            block.FeedInitialization(persons[i], persons[i].isHungry, persons[i].fullName, workplace, persons[i].isCombat);
+            block.FeedInitialization(persons[i], persons[i].isHungry, persons[i].fullName, workplace);
         }
     }
 
@@ -496,7 +478,7 @@ public class UI : MonoBehaviour
 
     //Person
 
-    public void EnablePersonPanel(string name, bool hungry, bool combat)
+    public void EnablePersonPanel(string name, bool hungry)
     {
         if (EnabledStartUI())
         {
@@ -504,10 +486,6 @@ public class UI : MonoBehaviour
             Enable(personPanel);
             personName.text = name;
             this.hungry.SetActive(hungry);
-            if (combat)
-                personCombat.sprite = combatImg;
-            else
-                personCombat.sprite = industrialImg;
         }
     }
 
@@ -533,6 +511,16 @@ public class UI : MonoBehaviour
         cyclesToNewPerson.text = "Cycles to a new person: " + cycles.ToString("0.##");
     }
 
+    public void SetEnableEmpirePortalHP(bool value)
+    {
+        empirePortalHP.SetActive(value);
+    }
+
+    public void SetEmpirePortalHP(int hp)
+    {
+        empirePortalHPText.text = hp.ToString();
+    }
+
     //War portal
 
     public void EnableWarPortalPanel()
@@ -542,6 +530,27 @@ public class UI : MonoBehaviour
             DisableAllBuildingPanels();
             Enable(warPortalPanel);
         }
+    }
+
+    public void EnableWarPortalUI(int portal)
+    {
+        DisableWarPortalsUI();
+        warPortalsUI[portal].SetActive(true);
+    }
+
+    public void DisableWarPortalsUI()
+    {
+        foreach (GameObject gameObject in warPortalsUI)
+        {
+            gameObject.SetActive(false);
+        }
+    }
+
+    public void SetTimeToAttack(int portal, float time)
+    {
+        if (!warPortalsUI[portal].activeInHierarchy)
+            EnableWarPortalUI(portal);
+        timeToAttackTexts[portal].text = time.ToString("0.##");
     }
 
     //Storage
@@ -590,7 +599,15 @@ public class UI : MonoBehaviour
         for (int i = 0; i < persons.Count; i++)
         {
             PersonStatBlock block = Instantiate(industrialPersonStat, industrialPersonStats).GetComponent<PersonStatBlock>();
-            block.Initialization(i, building, persons[i].isHungry, persons[i].fullName, persons[i].isCombat);
+            block.Initialization(i, building, persons[i].isHungry, persons[i].fullName);
+        }
+    }
+
+    public void SetWorkIndicator(int number, float value)
+    {
+        if (industrialPanel.activeInHierarchy)
+        {
+            industrialPersonStats.GetChild(number).GetComponent<PersonStatBlock>().SetWorkIndicator(value);
         }
     }
 
@@ -648,7 +665,7 @@ public class UI : MonoBehaviour
     void SpawnCombatStatBlock(IWorkplace building, Person person)
     {
         PersonStatBlock block = Instantiate(combatPersonStat, combatPersonStats).GetComponent<PersonStatBlock>();
-        block.Initialization(0, building, person.isHungry, person.fullName, person.isCombat);
+        block.Initialization(0, building, person.isHungry, person.fullName);
     }
 
     void SetPriority(int priority)

@@ -37,6 +37,7 @@ public class PathChecker : MonoBehaviour
         }
     }
 
+    bool pathBlocked = false;
     public void CheckPath()
     {
         foreach (Transform warPortal in warPortals)
@@ -46,7 +47,15 @@ public class PathChecker : MonoBehaviour
             {
                 ui.SetNoWayToEmpirePortal(true);
                 cycles.SetBlockedPause();
+                pathBlocked = true;
+                return;
             }
+        }
+        if (pathBlocked)
+        {
+            ui.SetNoWayToEmpirePortal(false);
+            cycles.SetPreviousTimeScale();
+            pathBlocked = false;
         }
     }
 }

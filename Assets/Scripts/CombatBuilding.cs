@@ -18,6 +18,8 @@ public abstract class CombatBuilding : Building, IWorkplace
 
     public override void Click()
     {
+        //before enemies attack set cur speed attack
+        SetCurAttackSpeed();
         ui.EnableCombatPanel(buildingsName, this, person, damage, curAttackSpeed, radius, rotateSpeed, projectileSpeed);
         ui.SetBuildingForPriority(this);
     }
@@ -35,7 +37,7 @@ public abstract class CombatBuilding : Building, IWorkplace
             person.SetActive(false);
             person.GetComponent<Person>().workplace = this;
             this.person.inCombatBuilding = true;
-            curAttackSpeed = baseAttackSpeed * (this.person.efficiencyModifier / 100);
+            SetCurAttackSpeed();
             ui.UpdateCombatStatBlock(this, this.person, curAttackSpeed);
         }
     }
@@ -46,6 +48,7 @@ public abstract class CombatBuilding : Building, IWorkplace
         person.workplace = null;
         person.gameObject.SetActive(true);
         person.inCombatBuilding = false;
+        curAttackSpeed = 0;
         this.person = null;
         return person;
     }
@@ -53,6 +56,17 @@ public abstract class CombatBuilding : Building, IWorkplace
     public int FindIndex(Person person)
     {
         return 0;
+    }
+
+    void SetCurAttackSpeed()
+    {
+        if (person != null)
+        {
+            float modifier = 1;
+            if (person.isHungry)
+                modifier = 0.75f;
+            curAttackSpeed = baseAttackSpeed * modifier;
+        }
     }
 }
 

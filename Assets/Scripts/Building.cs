@@ -18,7 +18,7 @@ public abstract class Building : MonoBehaviour
     
     [SerializeField] List<Cost> cost = new List<Cost>();
 
-    public bool isPortal;
+    public bool undestroyable, unmovable;
 
     protected virtual void Start()
     {
@@ -35,22 +35,27 @@ public abstract class Building : MonoBehaviour
         rotationPoint.localRotation = Quaternion.Lerp(rotationPoint.localRotation, nextRotation, 0.3f);
     }
 
-    bool red = false;
+    bool colored = false;
     private void OnMouseEnter()
     {
-        if (ui.EnabledBuildingsGrid() && buildingsGrid.buildingsMode == BuildingsMode.Destruction && !isPortal)
+        if (ui.EnabledBuildingsGrid() && buildingsGrid.buildingsMode == BuildingsMode.Destruction && !undestroyable)
         {
             SetTransparent(false);
-            red = true;
+            colored = true;
+        }
+        else if(ui.EnabledBuildingsGrid() && buildingsGrid.buildingsMode == BuildingsMode.Movement && !unmovable && buildingsGrid.IsFlyingBuildingNull())
+        {
+            SetTransparent(true);
+            colored = true;
         }
     }
 
     private void OnMouseExit()
     {
-        if (red)
+        if (colored)
         {
             SetNormal();
-            red = false;
+            colored = false;
         }
     }
 
@@ -105,7 +110,11 @@ public abstract class Building : MonoBehaviour
 
     public virtual void Destroy()
     {
-        Destroy(this.gameObject);
+        for (int i = 0; i < cost.Count; i++)
+        {
+            resources.AddResource(cost[i].resource, cost[i].cost);
+        }
+        Destroy(gameObject);
     }
 
     private void OnDrawGizmosSelected()

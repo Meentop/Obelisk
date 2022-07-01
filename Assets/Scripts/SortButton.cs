@@ -35,15 +35,11 @@ public class SortButton : MonoBehaviour, IPointerClickHandler
             {
                 if (sortBy == SortBy.Hungry)
                     FeedOrderBy(i => i.person.isHungry);
-                else if (sortBy == SortBy.Combat)
-                    FeedOrderBy(i => i.person.isCombat);
             }
             else
             {
                 if (sortBy == SortBy.Hungry)
                     ListOrderBy(i => i.person.isHungry);
-                else if (sortBy == SortBy.Combat)
-                    ListOrderBy(i => i.person.isCombat);
                 else if (sortBy == SortBy.Workplace)
                     ListOrderBy(i => i.person.workplace != null);
             }
@@ -99,6 +95,5 @@ public class SortButton : MonoBehaviour, IPointerClickHandler
 public enum SortBy 
 { 
     Hungry,
-    Combat,
     Workplace
 }

@@ -12,9 +12,7 @@ public class Person : MonoBehaviour
 
     public Transform hairSpawnPoint, beardSpawnPoint, bodySpawnPoint;
 
-    public float efficiencyModifier = 0;
-
-    public bool isHungry = false, active = false, inCombatBuilding = false, isCombat;
+    public bool isHungry = false, active = false, inCombatBuilding = false;
 
     public Vector3 nextPosition;
 
@@ -33,10 +31,6 @@ public class Person : MonoBehaviour
     private void Update()
     {
         transform.position = Vector3.Lerp(transform.position, nextPosition, 0.3f);
-        if (isHungry)
-            efficiencyModifier = -25;
-        else
-            efficiencyModifier = 0;
     }
 
     public void SetLayer(int layer)
@@ -55,7 +49,7 @@ public class Person : MonoBehaviour
 
     public void Click()
     {
-        ui.EnablePersonPanel(fullName, isHungry, isCombat);
+        ui.EnablePersonPanel(fullName, isHungry);
     }
 
     public void SpawnAfterBuilding()

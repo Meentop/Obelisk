@@ -103,7 +103,8 @@ MonoBehaviour:
   cost:
   - resource: 1
     cost: 20
-  workersCount: 1
+  isPortal: 0
+  maxWorkersCount: 3
   resource: 2
   baseProduction: 5
   workers: []

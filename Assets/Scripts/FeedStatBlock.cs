@@ -13,16 +13,12 @@ public class FeedStatBlock : PersonStatBlock
 
     public bool fed = false;
 
-    public virtual void FeedInitialization(Person person, bool hungry, string name, string workplace, bool combat)
+    public virtual void FeedInitialization(Person person, bool hungry, string name, string workplace)
     {
         this.person = person;
         this.hungry.SetActive(hungry);
         fullName.text = name;
         this.workplace.text = workplace;
-        if (combat)
-            this.combat.sprite = combatImg;
-        else
-            this.combat.sprite = industrialImg;
     }
 
     void SetFed(bool value)

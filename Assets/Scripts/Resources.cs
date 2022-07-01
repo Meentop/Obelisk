@@ -6,9 +6,9 @@ public class Resources : MonoBehaviour
 {
     public static Resources Instance;
 
-    float[] resources = new float[4] { 0, 0, 0, 0 };
+    int[] resources = new int[5] { 0, 0, 0, 0, 0 };
 
-    int[] resourcesCapasity = new int[4] { 0, 0, 0, 0};
+    int[] resourcesCapasity = new int[3] { 0, 0, 0 };
 
     UI ui;
 
@@ -21,45 +21,44 @@ public class Resources : MonoBehaviour
     {
         ui = UI.Instance;
         for (int i = 0; i < resources.Length; i++)
-        {
-            ui.UpdateResourceNumber((Resource)i, resources[i], resourcesCapasity[i]);
-        }
-        AddCapasity(Resource.Food, 100);
-        AddCapasity(Resource.Wood, 150);
-        AddCapasity(Resource.Metal, 150);
-        AddResource(Resource.Food, 1);
+            UpdateResourceNumber((Resource)i);
+        AddCapasity(Resource.Food, 50);
+        AddCapasity(Resource.Wood, 50);
+        AddCapasity(Resource.Metal, 50);
+        AddResource(Resource.Food, 2);
         AddResource(Resource.Wood, 100);
         AddResource(Resource.Metal, 50);
         AddResource(Resource.ResearchPoint, 999);
+        AddResource(Resource.MatterGenerator, 1);
     }
 
     //Resources
 
-    public void AddResource(Resource resource, float add)
+    public void AddResource(Resource resource, int add)
     {
         resources[(int)resource] += add;
-        if (resources[(int)resource] > resourcesCapasity[(int)resource] && resource != Resource.ResearchPoint)
+        if (resource != Resource.ResearchPoint && resource != Resource.MatterGenerator && resources[(int)resource] > resourcesCapasity[(int)resource])
         {
             resources[(int)resource] = resourcesCapasity[(int)resource];
             ui.StorageIsFull();
         }
-        ui.UpdateResourceNumber(resource, resources[(int)resource], resourcesCapasity[(int)resource]);
+        UpdateResourceNumber(resource);
     }
 
-    public bool HasResources(Resource resource, float take)
+    public bool HasResources(Resource resource, int take)
     {
         return resources[(int)resource] >= take;
     }
 
-    public void TakeResource(Resource resource, float take)
+    public void TakeResource(Resource resource, int take)
     {
         resources[(int)resource] -= take;
-        ui.UpdateResourceNumber(resource, resources[(int)resource], resourcesCapasity[(int)resource]);
+        UpdateResourceNumber(resource);
     }
 
     public int GetResource(Resource resource)
     {
-        return (int)resources[(int)resource];
+        return resources[(int)resource];
     }
 
     //Capasity
@@ -70,10 +69,13 @@ public class Resources : MonoBehaviour
         ui.UpdateResourceNumber(resource, resources[(int)resource], resourcesCapasity[(int)resource]);
     }
 
-    public void RemoveCapasity(Resource resource, int remove)
+
+    void UpdateResourceNumber(Resource resource)
     {
-        resourcesCapasity[(int)resource] -= remove;
-        ui.UpdateResourceNumber(resource, resources[(int)resource], resourcesCapasity[(int)resource]);
+        if (resource != Resource.ResearchPoint && resource != Resource.MatterGenerator)
+            ui.UpdateResourceNumber(resource, resources[(int)resource], resourcesCapasity[(int)resource]);
+        else
+            ui.UpdateResourceNumber(resource, resources[(int)resource]);
     }
 }
 
@@ -82,6 +84,7 @@ public enum Resource
     Food, 
     Wood,
     Metal,
-    ResearchPoint
+    ResearchPoint,
+    MatterGenerator
 }
 

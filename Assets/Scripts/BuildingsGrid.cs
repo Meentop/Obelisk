@@ -104,7 +104,8 @@ public class BuildingsGrid : MonoBehaviour
     {
         PlaceBuilding(flyingBuilding, placeX, placeY);
         flyingBuilding.SetNormal();
-        flyingBuilding.Place();
+        if(buildingsMode == BuildingsMode.Normal)
+            flyingBuilding.Place();
         flyingBuilding = null;
     }
 
@@ -193,6 +194,16 @@ public class BuildingsGrid : MonoBehaviour
             flyingBuilding.transform.position = new Vector3(buildingPlace.x, 0f, buildingPlace.y);
             PlaceFlyingBuilding(buildingPlace.x, buildingPlace.y);
         }
+    }
+
+
+
+    public void OffBuildingsGrid()
+    {
+        if (buildingsMode == BuildingsMode.Movement)
+            ReturnFlyingBuilding();
+        else if (buildingsMode == BuildingsMode.Normal)
+            FinishPlacingBuilding();
     }
 }
 

@@ -16,6 +16,11 @@ public class EmpirePortal : Building
 
     [SerializeField] Transform personSpawnPoint;
 
+    [SerializeField] LayerMask enemy;
+
+    public int maxHp;
+    public int curHp;
+
     private void Awake()
     {
         Instance = this;
@@ -28,6 +33,8 @@ public class EmpirePortal : Building
         cycles = Cycles.Instance;
         cameraMove = CameraMove.Instance;
         buildingsGrid.PlaceBuilding(this, (int)transform.position.x, (int)transform.position.z);
+
+        curHp = maxHp;
     }
 
     private void Update()
@@ -42,6 +49,20 @@ public class EmpirePortal : Building
                     ui.SetCyclesToNewPerson(time + i - 1);
                     break;
                 }
+            }
+        }
+
+        Collider[] hitColliders = Physics.OverlapBox(gameObject.transform.position, transform.localScale / 2, Quaternion.identity, enemy);
+
+        if (hitColliders.Length > 0)
+        {
+            foreach (Collider collider in hitColliders)
+            {
+                Destroy(collider.gameObject);
+                curHp--;
+                ui.SetEmpirePortalHP(curHp);
+                if (curHp <= 0)
+                    print("end game");
             }
         }
     }

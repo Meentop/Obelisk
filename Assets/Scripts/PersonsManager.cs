@@ -42,7 +42,7 @@ public class PersonsManager : MonoBehaviour
         {
             cycles.SetBlockedPause();
             cameraMove.BlockedZoom(10f);
-            buildingsGrid.FinishPlacingBuilding();
+            buildingsGrid.OffBuildingsGrid();
             ui.EnableFeedPersonsMenu(allPersons, resources.GetResource(Resource.Food));
         }
     }

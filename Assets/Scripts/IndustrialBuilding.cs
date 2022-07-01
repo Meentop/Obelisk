@@ -6,7 +6,7 @@ public class IndustrialBuilding : Building, IWorkplace
 {
     Cycles cycles;
 
-    [SerializeField] int workersCount = 1;
+    [SerializeField] int maxWorkersCount = 1;
     [SerializeField] Resource resource;
     [SerializeField] float baseProduction;
     [SerializeField] List<Person> workers = new List<Person>();
@@ -21,33 +21,34 @@ public class IndustrialBuilding : Building, IWorkplace
 
     public override void Click()
     {
-        ui.EnableIndustrialPanel(this, buildingsName, (int)resource, AllProduction(), workers, workersCount);
+        ui.EnableIndustrialPanel(this, buildingsName, (int)resource, AllProduction(), workers, maxWorkersCount);
     }
 
     public override void Destroy()
     {
-        for (int i = 0; i < workers.Count; i++)
+        int count = workers.Count;
+        for (int i = 0; i < count; i++)
         {
-            Instantiate(RemoveWorker(i).gameObject, transform.position, Quaternion.identity);
+            RemoveWorker(0);
         }
         base.Destroy();
     }
 
     public bool HasWorkplace()
     {
-        return workers.Count < workersCount;
+        return workers.Count < maxWorkersCount;
     }
 
 
     public void AddWorker(GameObject person)
     {
-        if(workers.Count < workersCount)
+        if(workers.Count < maxWorkersCount)
         {
             workers.Add(person.GetComponent<Person>());
             person.SetActive(false);
             person.GetComponent<Person>().workplace = this;
             StartWork(person.GetComponent<Person>());
-            ui.UpdateIndustrialWorkers(this, AllProduction(), workers, workersCount);
+            ui.UpdateIndustrialWorkers(this, AllProduction(), workers, maxWorkersCount);
         }
     }
 
@@ -66,7 +67,10 @@ public class IndustrialBuilding : Building, IWorkplace
         float production = 0;
         foreach (Person person in workers)
         {
-            production += baseProduction + (baseProduction * (person.efficiencyModifier / 100));
+            float modifier = 1;
+            if (person.isHungry)
+                modifier = 0.75f;
+            production += baseProduction * modifier;
         }
         return production;
     }
@@ -89,13 +93,19 @@ public class IndustrialBuilding : Building, IWorkplace
     {
         while (true)
         {
-            float productionInCycle = baseProduction + (baseProduction * (person.efficiencyModifier / 100));
-            float timeForOneProduct = cycles.cycleTime / productionInCycle;
+            float timeForOneProduct = cycles.cycleTime / baseProduction;
             float curTime = 0;
             while (curTime < timeForOneProduct)
             {
-                yield return new WaitForSecondsRealtime(0.1f);
-                curTime += 0.1f * cycles.timeScale;
+                if (cycles.timeScale == 0)
+                    yield return new WaitWhile(() => cycles.timeScale == 0);
+                yield return new WaitForSecondsRealtime(Time.fixedDeltaTime);
+                float modifier = 1;
+                if (person.isHungry)
+                    modifier = 0.75f;
+                curTime += Time.fixedDeltaTime * cycles.timeScale * modifier;
+                if(gameObject.GetComponent<Outline>().isActiveAndEnabled)
+                    ui.SetWorkIndicator(FindIndex(person), curTime / timeForOneProduct);
                 if (curTime >= timeForOneProduct)
                     resources.AddResource(resource, 1);
             }

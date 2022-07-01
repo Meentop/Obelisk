@@ -54,8 +54,10 @@ MonoBehaviour:
   cost:
   - resource: 1
     cost: 10
+  undestroyable: 1
   resource: 0
-  capasity: 100
+  capasity: 10
+  resourcesInStorage: 0
 --- !u!65 &1907688599824368265
 BoxCollider:
   m_ObjectHideFlags: 0
