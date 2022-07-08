@@ -15,5 +15,6 @@ public class WorldCanvaz : MonoBehaviour
     {
         float scale = 0.01f * mainCamera.orthographicSize / 10;
         transform.localScale = new Vector3(scale, scale, 1);
+        transform.rotation = Quaternion.Euler(60, 45, 0);
     }
 }

@@ -7,7 +7,7 @@ public class UI : MonoBehaviour
 {
     [HideInInspector] public static UI Instance;
 
-    [SerializeField] GameObject startUI, cycles, resources;
+    [SerializeField] GameObject bottomLeft, topLeft, bottomRight;
     [SerializeField] List<GameObject> menus = new List<GameObject>();
     [SerializeField] List<GameObject> buildingPanels = new List<GameObject>();
     [SerializeField] List<GameObject> necessaryPanels = new List<GameObject>();
@@ -15,11 +15,13 @@ public class UI : MonoBehaviour
 
     [SerializeField] Text[] resourceTexts = new Text[5];
 
-    [SerializeField] Text cycleNumber;    
+    [SerializeField] Text cycleNumber, personCount;    
 
     [SerializeField] List<Button> speedButtons = new List<Button>();
 
     [SerializeField] Sprite[] resourcesSprites = new Sprite[5];
+
+    [SerializeField] Sprite[] enemiesSprites;
 
     [Header("Warnings")]
     [SerializeField] GameObject noWorkplace;
@@ -72,7 +74,13 @@ public class UI : MonoBehaviour
     [Header("War portal")]
     [SerializeField] GameObject warPortalPanel;
     [SerializeField] GameObject[] warPortalsUI = new GameObject[4];
+    [SerializeField] RectTransform[] warPortalsBackgrounds = new RectTransform[4];
     [SerializeField] Text[] timeToAttackTexts = new Text[4];
+    [SerializeField] Transform[] horizontalGroups = new Transform[4];
+    [SerializeField] GameObject enemyIcon;
+    [Space]
+    [SerializeField] Transform verticalGroup;
+    [SerializeField] GameObject waveBlock;
 
     [Header("Storage Panel")]
     [SerializeField] GameObject storagePanel;
@@ -109,6 +117,15 @@ public class UI : MonoBehaviour
     [SerializeField] Image priorityImage;
     [SerializeField] Sprite[] prioritySprites = new Sprite[6];
 
+    [Header("Enemy Info")]
+    [SerializeField] GameObject enemyInfoPanel;
+    [SerializeField] Image infoEnemyIcon;
+    [SerializeField] Text infoEnemyName;
+    [SerializeField] Sprite[] enemiesImages;
+    [SerializeField] Image infoEnemyImage;
+    [SerializeField] string[] enemiesDescriptions;
+    [SerializeField] Text infoEnemyDescription;
+
     EnemyAttacks enemyAttacks;
 
     private void Awake()
@@ -137,21 +154,19 @@ public class UI : MonoBehaviour
                 DisableAllMenu();
                 DisableAllBuildingPanels();
                 Disable(cells);
-                if(!enemyAttacks.IsEnemyAttack())
-                    Enable(startUI);
+                if (!enemyAttacks.IsEnemyAttack())
+                    EnableMenuButtons();
                 SetCursorOnButton(false);
             }
         }
     }
 
-    void DisableAllMenu()
+    public void DisableAllMenu()
     {
         foreach (GameObject menu in menus)
         {
             Disable(menu);
         }
-        if(personsList.activeSelf)
-            DisablePersonsList();
     }
 
     void DisableAllBuildingPanels()
@@ -160,16 +175,19 @@ public class UI : MonoBehaviour
         {
             Disable(panel);
         }
+        DestroyAllWaveBlocks();
     }
 
-    public void EnableStartUI()
+    public void EnableMenuButtons()
     {
-        Enable(startUI);
+        Enable(bottomLeft);
+        Enable(bottomRight);
     }
 
-    public void DisnableStartUI()
+    public void DisableMenuButtons()
     {
-        Disable(startUI);
+        Disable(bottomLeft);
+        Disable(bottomRight);
     }
 
     public void DisableCells()
@@ -193,6 +211,11 @@ public class UI : MonoBehaviour
         cycleNumber.text = number.ToString();
     } 
 
+    public void UpdatePersonCount(int count)
+    {
+        personCount.text = count.ToString();
+    }
+
     public void SetTimeSpeedButton(int position)
     {
         foreach (Button button in speedButtons)
@@ -205,7 +228,7 @@ public class UI : MonoBehaviour
     public bool cursorOnButton { get; private set; } = false;
     public void DisableAllPanels()
     {
-        if (startUI.activeInHierarchy && !cursorOnButton)
+        if ((IsEnabledMenuButtons() || enemyAttacks.IsEnemyAttack()) && !cursorOnButton)
             DisableAllBuildingPanels();
     }
 
@@ -215,9 +238,9 @@ public class UI : MonoBehaviour
         cursorOnButton = value;
     }
 
-    public bool EnabledStartUI()
+    public bool IsEnabledMenuButtons()
     {
-        return startUI.activeInHierarchy;
+        return bottomLeft.activeInHierarchy;
     }
 
     public bool EnabledBuildingsGrid()
@@ -279,6 +302,7 @@ public class UI : MonoBehaviour
 
     public void EnablePersonsList(List<Person> persons)
     {
+        Enable(personsList);
         SpawnListStatBlocks(persons);
         listSortButtonGroup.StartWork();
     }
@@ -295,7 +319,10 @@ public class UI : MonoBehaviour
 
     void SpawnListStatBlocks(List<Person> persons)
     {
-        
+        foreach (Transform transform in personsListStats)
+        {
+            Destroy(transform.gameObject);
+        }
         for (int i = 0; i < persons.Count; i++)
         {
             PersonListStat block = Instantiate(personListStat, personsListStats).GetComponent<PersonListStat>();
@@ -339,12 +366,11 @@ public class UI : MonoBehaviour
 
     public void EnablePersonCreatorMenu()
     {
-        if (EnabledStartUI())
+        if (IsEnabledMenuButtons())
         {
             DisableAllBuildingPanels();
-            Disable(startUI);
-            Disable(cycles);
-            Disable(resources);
+            DisableMenuButtons();
+            Disable(topLeft);
             EnableApearanceMenu(true);
             Enable(personCreatorMenu);
         }
@@ -352,10 +378,9 @@ public class UI : MonoBehaviour
 
     public void DisablePersonCreatorMenu()
     {
-        if(!enemyAttacks.IsEnemyAttack())
-            Enable(startUI);
-        Enable(cycles);
-        Enable(resources);
+        if (!enemyAttacks.IsEnemyAttack())
+            EnableMenuButtons();
+        Enable(topLeft);
         Disable(personCreatorMenu);
     }
 
@@ -402,8 +427,7 @@ public class UI : MonoBehaviour
         DisableAllMenu();
         Disable(cells);
         DisableAllBuildingPanels();
-        Disable(startUI);
-        Disable(cycles);
+        DisableMenuButtons();
         Enable(feedPersonsMenu);
         SpawnFeedStatBlocks(persons, maxFood);
         feedSortButtonGroup.StartWork();
@@ -418,9 +442,8 @@ public class UI : MonoBehaviour
                 transform.GetComponent<FeedStatBlock>().FinishFeed();
                 Destroy(transform.gameObject);
             }
-            if(!enemyAttacks.IsEnemyAttack())
-                Enable(startUI);
-            Enable(cycles);
+            if (!enemyAttacks.IsEnemyAttack())
+                EnableMenuButtons();
             Disable(feedPersonsMenu);
             fedPersons = 0;
             feedSortButtonGroup.SetNeutralAllButtons();
@@ -480,7 +503,7 @@ public class UI : MonoBehaviour
 
     public void EnablePersonPanel(string name, bool hungry)
     {
-        if (EnabledStartUI())
+        if (IsEnabledMenuButtons())
         {
             DisableAllBuildingPanels();
             Enable(personPanel);
@@ -494,7 +517,7 @@ public class UI : MonoBehaviour
 
     public void EnableEmpirePortalPanel()
     {
-        if(EnabledStartUI())
+        if(IsEnabledMenuButtons() || enemyAttacks.IsEnemyAttack())
         {
             DisableAllBuildingPanels();
             Enable(empirePortalPanel);
@@ -525,7 +548,7 @@ public class UI : MonoBehaviour
 
     public void EnableWarPortalPanel()
     {
-        if (EnabledStartUI())
+        if (IsEnabledMenuButtons() || enemyAttacks.IsEnemyAttack())
         {
             DisableAllBuildingPanels();
             Enable(warPortalPanel);
@@ -553,11 +576,46 @@ public class UI : MonoBehaviour
         timeToAttackTexts[portal].text = time.ToString("0.##");
     }
 
+    public void SetEnemiesIcons(int portal, int[] counts)
+    {
+        foreach (Transform transform in horizontalGroups)
+        {
+            foreach (Transform transform1 in transform)
+            {
+                Destroy(transform1.gameObject);
+            }
+        }
+
+        foreach (int enemyType in counts)
+        {
+            Instantiate(enemyIcon, horizontalGroups[portal]).GetComponent<Image>().sprite = enemiesSprites[enemyType];
+        }
+        warPortalsBackgrounds[portal].sizeDelta = new Vector2(185.5f + (60 * counts.Length), warPortalsBackgrounds[portal].sizeDelta.y);
+    }
+
+    public void DestroyAllWaveBlocks()
+    {
+        foreach (Transform transform in verticalGroup)
+        {
+            Destroy(transform.gameObject);
+        }
+    }
+
+    public void CreateWaveBlocks(int order)
+    {
+        Instantiate(waveBlock, verticalGroup).GetComponent<WaveBlock>().InitWaveBlock(order);
+    }
+
+    public void InitNewEnemyGroupBlock(int waveOrder, EnemyType enemyType, bool lowDensity, int healthCount, int enemyCount)
+    {
+        verticalGroup.GetChild(waveOrder).GetComponent<WaveBlock>().InitNewEnemyGroup(enemyType, lowDensity, healthCount, enemyCount);
+    }
+
     //Storage
 
     public void EnableStoragePanel(string storageName, int resource, int capasity)
     {
-        if (EnabledStartUI())
+        if (IsEnabledMenuButtons() || enemyAttacks.IsEnemyAttack())
         {
             DisableAllBuildingPanels();
             Enable(storagePanel);
@@ -571,7 +629,7 @@ public class UI : MonoBehaviour
 
     public void EnableIndustrialPanel(IndustrialBuilding building, string name, int resource, float production, List<Person> persons, int maxWorkers)
     {
-        if (EnabledStartUI())
+        if (IsEnabledMenuButtons() || enemyAttacks.IsEnemyAttack())
         {
             DisableAllBuildingPanels();
             Enable(industrialPanel);
@@ -615,7 +673,7 @@ public class UI : MonoBehaviour
 
     public void EnableFortificationPanel(string name)
     {
-        if (EnabledStartUI())
+        if (IsEnabledMenuButtons() || enemyAttacks.IsEnemyAttack())
         {
             DisableAllBuildingPanels();
             Enable(fortificationPanel);
@@ -629,7 +687,7 @@ public class UI : MonoBehaviour
 
     public void EnableCombatPanel(string name, IWorkplace building, Person person, int damage, float attackSpeed, float radius, float rotateSpeed, float projectileSpeed)
     {
-        if (EnabledStartUI())
+        if (IsEnabledMenuButtons() || enemyAttacks.IsEnemyAttack())
         {
             DisableAllBuildingPanels();
             Enable(combatPanel);
@@ -689,5 +747,16 @@ public class UI : MonoBehaviour
         if (i < 0)
             i = 5;
         SetPriority(i);
+    }
+
+    //Enemy Info
+
+    public void EnableEnemyInfoPanel(EnemyType enemyType)
+    {
+        Enable(enemyInfoPanel);
+        infoEnemyIcon.sprite = enemiesSprites[(int)enemyType];
+        infoEnemyName.text = enemyType.ToString();
+        infoEnemyImage.sprite = enemiesImages[(int)enemyType];
+        infoEnemyDescription.text = enemiesDescriptions[(int)enemyType];
     }
 }

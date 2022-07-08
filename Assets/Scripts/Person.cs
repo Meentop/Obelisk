@@ -24,8 +24,8 @@ public class Person : MonoBehaviour
         mouseRay = MouseRay.Instance;
         personsManager = PersonsManager.Instance;
         nextPosition = transform.position;
-        if(active)
-            personsManager.allPersons.Add(this);
+        if (active)
+            personsManager.AddPerson(this);
     }
 
     private void Update()
@@ -69,7 +69,7 @@ public class Person : MonoBehaviour
             IWorkplace iWorkplace = (IWorkplace)workplace;
             iWorkplace.RemoveWorker(iWorkplace.FindIndex(this));
         }
-        personsManager.allPersons.Remove(this);
+        personsManager.RemovePerson(this);
         Destroy(gameObject);
     }
 }

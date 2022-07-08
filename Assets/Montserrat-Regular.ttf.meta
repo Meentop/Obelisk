@@ -3,14 +3,15 @@ guid: 581601d7824ee1c4fa4b48442d1fbef0
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
-  fontSize: 16
-  forceTextureCase: -2
+  fontSize: 300
+  forceTextureCase: -1
   characterSpacing: 0
   characterPadding: 1
   includeFontData: 1
   fontNames:
   - Montserrat
-  fallbackFontReferences: []
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: 65f7a8efed9aabe44b729fd5d551eb93, type: 3}
   customCharacters: 
   fontRenderingMode: 0
   ascentCalculationMode: 1

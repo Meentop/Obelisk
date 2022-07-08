@@ -95,6 +95,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   buildingsName: Wood wall
+  center: {fileID: 4449192818242533039}
   outline: {fileID: 0}
   renderers:
   - {fileID: 4745317995238361541}
@@ -102,6 +103,8 @@ MonoBehaviour:
   cost:
   - resource: 1
     cost: 5
+  undestroyable: 0
+  unmovable: 0
 --- !u!65 &139546386972784030
 BoxCollider:
   m_ObjectHideFlags: 0

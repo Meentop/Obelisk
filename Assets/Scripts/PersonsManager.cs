@@ -6,7 +6,7 @@ public class PersonsManager : MonoBehaviour
 {
     public static PersonsManager Instance;
 
-    public List<Person> allPersons = new List<Person>();
+    List<Person> allPersons = new List<Person>();
 
     Resources resources;
     UI ui;
@@ -17,15 +17,28 @@ public class PersonsManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        ui = UI.Instance;
     }
 
     private void Start()
     {
         resources = Resources.Instance;
-        ui = UI.Instance;
         cycles = Cycles.Instance;
         cameraMove = CameraMove.Instance;
         buildingsGrid = BuildingsGrid.Instance;
+        ui.UpdatePersonCount(allPersons.Count);
+    }
+
+    public void AddPerson(Person person)
+    {
+        allPersons.Add(person);
+        ui.UpdatePersonCount(allPersons.Count);
+    }
+
+    public void RemovePerson(Person person)
+    {
+        allPersons.Remove(person);
+        ui.UpdatePersonCount(allPersons.Count);
     }
 
     public void TakeFood()

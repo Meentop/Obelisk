@@ -11,6 +11,8 @@ public class MouseRay : MonoBehaviour
     UI ui;
     OutlineManager outlineManager;
     BuildingsGrid buildingsGrid;
+    RangeRenderer rangeRenderer;
+    EnemyAttacks enemyAttacks;
 
     private void Awake()
     {
@@ -22,6 +24,8 @@ public class MouseRay : MonoBehaviour
         ui = UI.Instance;
         outlineManager = OutlineManager.Instance;
         buildingsGrid = BuildingsGrid.Instance;
+        rangeRenderer = RangeRenderer.Instance;
+        enemyAttacks = EnemyAttacks.Instance;
     }
 
     public Vector3 startMousePos, curMousePos;
@@ -42,13 +46,19 @@ public class MouseRay : MonoBehaviour
             {
                 startMousePos = Input.mousePosition;
                 grabPerson = hit.collider.GetComponent<Person>();
+                rangeRenderer.Clear();
             }
-            else if (Physics.Raycast(ray, out hit, Mathf.Infinity, building))
+            if (Physics.Raycast(ray, out hit, Mathf.Infinity, building))
             {
                 Building building = hit.collider.GetComponent<Building>();
                 building.Click();
                 selectedBulding = building;
                 outlineManager.EnableOutline(building.outline);
+                if (building is CombatBuilding && (ui.IsEnabledMenuButtons() || enemyAttacks.IsEnemyAttack()))
+                    rangeRenderer.DrawRange(20, building.GetComponent<CombatBuilding>());
+                else
+                    rangeRenderer.Clear();
+
                 if (ui.EnabledBuildingsGrid() && buildingsGrid.buildingsMode == BuildingsMode.Destruction && !building.undestroyable)
                 {
                     buildingsGrid.ClearGrid(building);
@@ -65,6 +75,7 @@ public class MouseRay : MonoBehaviour
             {
                 ui.DisableAllPanels();
                 outlineManager.DisableOutline();
+                rangeRenderer.Clear();
             }
         }
         else if(Input.GetMouseButton(0))
@@ -73,22 +84,19 @@ public class MouseRay : MonoBehaviour
             {
                 curMousePos = Input.mousePosition;
             }
-            if(Vector3.Distance(startMousePos, curMousePos) != 0f && groundPlane.Raycast(ray, out float position) && ui.EnabledStartUI())
+            if(Vector3.Distance(startMousePos, curMousePos) != 0f && groundPlane.Raycast(ray, out float position) && (ui.IsEnabledMenuButtons() || enemyAttacks.IsEnemyAttack()) && !grabPerson.inCombatBuilding)
             {
                 grabPerson.nextPosition = ray.GetPoint(position);
             }
         }
-        else if(Input.GetMouseButtonUp(0))
+        else if(Input.GetMouseButtonUp(0) && grabPerson != null && !grabPerson.inCombatBuilding)
         {
-            if (Physics.Raycast(ray, out hit, Mathf.Infinity, person) && Vector3.Distance(startMousePos, curMousePos) == 0f && ui.EnabledStartUI())
+            if (Physics.Raycast(ray, out hit, Mathf.Infinity, person) && Vector3.Distance(startMousePos, curMousePos) == 0f && (ui.IsEnabledMenuButtons() || enemyAttacks.IsEnemyAttack()))
             {
-                if (!grabPerson.inCombatBuilding)
-                {
-                    grabPerson.Click();
-                    outlineManager.EnableOutline(grabPerson.GetComponent<Outline>());
-                }
+                grabPerson.Click();
+                outlineManager.EnableOutline(grabPerson.GetComponent<Outline>());
             }
-            else if(Physics.Raycast(ray, out hit, Mathf.Infinity, person) && Vector3.Distance(startMousePos, curMousePos) != 0f && ui.EnabledStartUI())
+            else if(Physics.Raycast(ray, out hit, Mathf.Infinity, person) && Vector3.Distance(startMousePos, curMousePos) != 0f && (ui.IsEnabledMenuButtons() || enemyAttacks.IsEnemyAttack()))
             {
                 if (grabPerson != null && Physics.Raycast(ray, out hit, Mathf.Infinity, building))
                 {
@@ -99,6 +107,8 @@ public class MouseRay : MonoBehaviour
                         {
                             hit.collider.GetComponent<Building>().Click();
                             outlineManager.EnableOutline(hit.collider.GetComponent<Outline>());
+                            if (hit.collider.GetComponent<CombatBuilding>())
+                                rangeRenderer.DrawRange(20, hit.collider.GetComponent<CombatBuilding>());
                             selectedBulding = hit.collider.GetComponent<Building>();
                             workplace.AddWorker(grabPerson.gameObject);
                         }

@@ -47,6 +47,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   buildingsName: Food Storage
+  center: {fileID: 4771583899913226647}
   outline: {fileID: 0}
   renderers:
   - {fileID: 1117091779959232689}
@@ -55,6 +56,7 @@ MonoBehaviour:
   - resource: 1
     cost: 15
   undestroyable: 1
+  unmovable: 0
   resource: 1
   capasity: 200
   resourcesInStorage: 0

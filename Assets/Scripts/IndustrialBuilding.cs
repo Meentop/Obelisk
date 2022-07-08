@@ -9,7 +9,8 @@ public class IndustrialBuilding : Building, IWorkplace
     [SerializeField] int maxWorkersCount = 1;
     [SerializeField] Resource resource;
     [SerializeField] float baseProduction;
-    [SerializeField] List<Person> workers = new List<Person>();
+    List<Person> workers = new List<Person>();
+    [SerializeField] GameObject sleep;
 
     List<IEnumerator> works = new List<IEnumerator>();
 
@@ -49,6 +50,7 @@ public class IndustrialBuilding : Building, IWorkplace
             person.GetComponent<Person>().workplace = this;
             StartWork(person.GetComponent<Person>());
             ui.UpdateIndustrialWorkers(this, AllProduction(), workers, maxWorkersCount);
+            sleep.SetActive(false);
         }
     }
 
@@ -58,7 +60,9 @@ public class IndustrialBuilding : Building, IWorkplace
         person.workplace = null;
         FinishWork(number);
         person.gameObject.SetActive(true);
-        workers.RemoveAt(number); 
+        workers.RemoveAt(number);
+        if (workers.Count == 0)
+            sleep.SetActive(true);
         return person;
     }
 

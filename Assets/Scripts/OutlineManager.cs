@@ -6,6 +6,7 @@ public class OutlineManager : MonoBehaviour
 {
     Outline outline;
     UI ui;
+    EnemyAttacks enemyAttacks;
 
     public static OutlineManager Instance;
 
@@ -17,6 +18,7 @@ public class OutlineManager : MonoBehaviour
     private void Start()
     {
         ui = UI.Instance;
+        enemyAttacks = EnemyAttacks.Instance;
     }
 
     private void Update()
@@ -27,7 +29,7 @@ public class OutlineManager : MonoBehaviour
 
     public void EnableOutline(Outline outline)
     {
-        if (ui.EnabledStartUI())
+        if (ui.IsEnabledMenuButtons() || enemyAttacks.IsEnemyAttack())
         {
             DisableOutline();
             this.outline = outline;

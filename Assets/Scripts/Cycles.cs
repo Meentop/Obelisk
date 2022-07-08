@@ -46,7 +46,7 @@ public class Cycles : MonoBehaviour
         moonIntensity = myMoon.intensity;
     }
 
-    public int previousTimeScale = 1;
+    int previousTimeScale = 1;
 
     private void Update()
     {

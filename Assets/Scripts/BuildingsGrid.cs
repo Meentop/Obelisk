@@ -11,6 +11,7 @@ public class BuildingsGrid : MonoBehaviour
     Building[,] grid;
     Building flyingBuilding;
     Camera mainCamera;
+    RangeRenderer rangeRenderer;
     bool buildingPermit = true;
 
     public BuildingsMode buildingsMode;
@@ -20,6 +21,7 @@ public class BuildingsGrid : MonoBehaviour
         Instance = this;
         grid = new Building[gridSize.x, gridSize.y];
         mainCamera = Camera.main;
+        rangeRenderer = RangeRenderer.Instance;
     }
 
     //Universal
@@ -37,6 +39,9 @@ public class BuildingsGrid : MonoBehaviour
             flyingBuilding.RotateModel(-90);
         else if(Input.GetKeyDown(KeyCode.E))
             flyingBuilding.RotateModel(90);
+
+        if (flyingBuilding != null && flyingBuilding.GetComponent<CombatBuilding>())
+            rangeRenderer.DrawRange(20, flyingBuilding.GetComponent<CombatBuilding>());
 
         if (flyingBuilding != null)
         {
@@ -57,7 +62,7 @@ public class BuildingsGrid : MonoBehaviour
                 if (available && IsPlaceTaken(x, y)) available = false;
                 if (available && !buildingPermit) available = false;
 
-                flyingBuilding.transform.position = new Vector3(x, 0f, y);
+                flyingBuilding.SetPosition(new Vector3(x, 0f, y));
 
                 if (buildingsMode == BuildingsMode.Normal)
                 {
@@ -106,21 +111,25 @@ public class BuildingsGrid : MonoBehaviour
         flyingBuilding.SetNormal();
         if(buildingsMode == BuildingsMode.Normal)
             flyingBuilding.Place();
+        rangeRenderer.Clear();
         flyingBuilding = null;
     }
 
     public void StartPlacingBuilding(Building prefabBuilding)
     {
-        if (flyingBuilding != null)
-            Destroy(flyingBuilding.gameObject);
+        FinishPlacingBuilding();
 
         flyingBuilding = Instantiate(prefabBuilding);
     }
 
     public void FinishPlacingBuilding()
     {
-        if(flyingBuilding != null)
+        if (flyingBuilding != null)
+        {
             Destroy(flyingBuilding.gameObject);
+            flyingBuilding = null;
+            rangeRenderer.Clear();
+        }
     }
 
     public void SetBuildingPermit(bool permit)
@@ -191,7 +200,7 @@ public class BuildingsGrid : MonoBehaviour
     {
         if (buildingsMode == BuildingsMode.Movement && flyingBuilding != null)
         {
-            flyingBuilding.transform.position = new Vector3(buildingPlace.x, 0f, buildingPlace.y);
+            flyingBuilding.SetPosition(new Vector3(buildingPlace.x, 0f, buildingPlace.y));
             PlaceFlyingBuilding(buildingPlace.x, buildingPlace.y);
         }
     }

@@ -9,14 +9,13 @@ public class EmpirePortal : Building
     PersonCreator personCreator;
     Cycles cycles;
     CameraMove cameraMove;
+    EnemyAttacks enemyAttacks;
 
     public int personSpawnTime;
 
     [SerializeField] GameObject globalText, myCanvasIcon;
 
     [SerializeField] Transform personSpawnPoint;
-
-    [SerializeField] LayerMask enemy;
 
     public int maxHp;
     public int curHp;
@@ -32,12 +31,13 @@ public class EmpirePortal : Building
         personCreator = PersonCreator.Instance;
         cycles = Cycles.Instance;
         cameraMove = CameraMove.Instance;
+        enemyAttacks = EnemyAttacks.Instance;
         buildingsGrid.PlaceBuilding(this, (int)transform.position.x, (int)transform.position.z);
 
         curHp = maxHp;
     }
 
-    private void Update()
+    protected override void Update()
     {
         if(ui.IsEmpirePortalPanelEnabled())
         {
@@ -52,7 +52,7 @@ public class EmpirePortal : Building
             }
         }
 
-        Collider[] hitColliders = Physics.OverlapBox(gameObject.transform.position, transform.localScale / 2, Quaternion.identity, enemy);
+        Collider[] hitColliders = Physics.OverlapBox(center.position, transform.localScale / 2, Quaternion.identity, LayerMask.GetMask("Enemy"));
 
         if (hitColliders.Length > 0)
         {
@@ -77,15 +77,20 @@ public class EmpirePortal : Building
 
     public override void Click()
     {
-        if (availableNewPerson && !creatingNewPerson && ui.EnabledStartUI())
+        if (availableNewPerson && !creatingNewPerson)
         {
-            personCreator.StartCreate();
-            cycles.SetBlockedPause();
-            cameraMove.BlockedZoom(10f);
-            globalText.SetActive(false);
-            myCanvasIcon.SetActive(false);
-            availableNewPerson = false;
-            creatingNewPerson = true;
+            if (ui.IsEnabledMenuButtons())
+            {
+                personCreator.StartCreate();
+                cycles.SetBlockedPause();
+                cameraMove.BlockedZoom(10f);
+                globalText.SetActive(false);
+                myCanvasIcon.SetActive(false);
+                availableNewPerson = false;
+                creatingNewPerson = true;
+            }
+            else
+                print("no");
         }
         else if(!availableNewPerson && !creatingNewPerson)
             ui.EnableEmpirePortalPanel();

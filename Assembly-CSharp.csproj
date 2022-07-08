@@ -47,7 +47,7 @@
   <PropertyGroup>
     <ProjectTypeGuids>{E097FAD1-6243-4DAD-9C02-E9B9EFC3FFC1};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <UnityProjectGenerator>Package</UnityProjectGenerator>
-    <UnityProjectGeneratorVersion>2.0.15</UnityProjectGeneratorVersion>
+    <UnityProjectGeneratorVersion>2.0.16</UnityProjectGeneratorVersion>
     <UnityProjectType>Game:1</UnityProjectType>
     <UnityBuildTarget>StandaloneWindows64:19</UnityBuildTarget>
     <UnityVersion>2020.3.22f1</UnityVersion>
@@ -58,14 +58,18 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\Outline.cs" />
     <Compile Include="Assets\Scripts\Enemy.cs" />
+    <Compile Include="Assets\Scripts\WaveBlock.cs" />
     <Compile Include="Assets\Scripts\Building.cs" />
     <Compile Include="Assets\Scripts\WarPortal.cs" />
     <Compile Include="Assets\Scripts\OutlineManager.cs" />
+    <Compile Include="Assets\Scripts\RangeRenderer.cs" />
     <Compile Include="Assets\Scripts\CameraMove.cs" />
     <Compile Include="Assets\Scripts\IndustrialBuilding.cs" />
+    <Compile Include="Assets\Scripts\Projectile.cs" />
     <Compile Include="Assets\Scripts\Person.cs" />
     <Compile Include="Assets\Scripts\EnemyAttacks.cs" />
     <Compile Include="Assets\Scripts\BuildingsGrid.cs" />
+    <Compile Include="Assets\Scripts\EnemyGroupBlock.cs" />
     <Compile Include="Assets\Scripts\PersonStatBlock.cs" />
     <Compile Include="Assets\Scripts\PathChecker.cs" />
     <Compile Include="Assets\Scripts\ArcherTower.cs" />
@@ -81,11 +85,12 @@
     <Compile Include="Assets\Scripts\Cycles.cs" />
     <Compile Include="Assets\Scripts\Fortification.cs" />
     <Compile Include="Assets\Scripts\PersonsManager.cs" />
+    <Compile Include="Assets\Scripts\WorldCanvaz.cs" />
     <Compile Include="Assets\Scripts\Grounded.cs" />
     <Compile Include="Assets\Scripts\PersonListStat.cs" />
     <Compile Include="Assets\Scripts\PersonCreator.cs" />
     <Compile Include="Assets\Scripts\UI.cs" />
-    <Compile Include="Assets\Scripts\WorldCanvaz.cs" />
+    <Compile Include="Assets\Scripts\EnemyDescriptionButton.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Shaders\OutlineMask.shader" />
@@ -679,6 +684,9 @@
     </Reference>
     <Reference Include="Unity.TextMeshPro">
       <HintPath>Library\ScriptAssemblies\Unity.TextMeshPro.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.2D.Sprite.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.2D.Sprite.Editor.dll</HintPath>
     </Reference>
     <Reference Include="UnityEditor.UI">
       <HintPath>Library\ScriptAssemblies\UnityEditor.UI.dll</HintPath>

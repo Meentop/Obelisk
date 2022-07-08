@@ -48,6 +48,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   buildingsName: Metal Storage
+  center: {fileID: 4654113276155854417}
   outline: {fileID: 0}
   renderers:
   - {fileID: 2446721212227662800}
@@ -59,6 +60,7 @@ MonoBehaviour:
   - resource: 2
     cost: 20
   undestroyable: 1
+  unmovable: 0
   resource: 2
   capasity: 300
   resourcesInStorage: 0

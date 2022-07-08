@@ -7,7 +7,7 @@ public abstract class Building : MonoBehaviour
 {
     public string buildingsName;
 
-    Transform rotationPoint;
+    public Transform center;
     protected Resources resources;
     protected UI ui;
     protected BuildingsGrid buildingsGrid;
@@ -23,16 +23,17 @@ public abstract class Building : MonoBehaviour
     protected virtual void Start()
     {
         resources = Resources.Instance;
-        rotationPoint = transform.GetChild(0);
+        center = transform.GetChild(0);
         outline = GetComponent<Outline>();
         buildingsGrid = BuildingsGrid.Instance;
         ui = UI.Instance;
-        nextRotation = rotationPoint.localRotation;
+        nextRotation = center.localRotation;
     }
 
-    private void Update()
+    protected virtual void Update()
     {
-        rotationPoint.localRotation = Quaternion.Lerp(rotationPoint.localRotation, nextRotation, 0.3f);
+        if(center.localRotation != nextRotation)
+            center.localRotation = Quaternion.Lerp(center.localRotation, nextRotation, 30 * Time.deltaTime);
     }
 
     bool colored = false;
@@ -57,6 +58,11 @@ public abstract class Building : MonoBehaviour
             SetNormal();
             colored = false;
         }
+    }
+
+    public virtual void SetPosition(Vector3 pos)
+    {
+        transform.position = pos;
     }
 
     public void SetTransparent(bool available)
