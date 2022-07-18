@@ -12,7 +12,7 @@ public class EnemyAttacks : MonoBehaviour
     EmpirePortal empirePortal;
     Resources resources;
 
-    [SerializeField] Transform[] enemySpawnPoints = new Transform[4];
+    [SerializeField] WarPortal[] warPortals = new WarPortal[4];
 
     [SerializeField] List<Enemy> enemies = new List<Enemy>();
 
@@ -32,7 +32,7 @@ public class EnemyAttacks : MonoBehaviour
         buildingsGrid = BuildingsGrid.Instance;
         empirePortal = EmpirePortal.Instance;
         resources = Resources.Instance;
-        SetEnemiesIcons();
+        StartCoroutine(PrepareToNewAttack());
     }
 
     private void Update()
@@ -89,8 +89,11 @@ public class EnemyAttacks : MonoBehaviour
                         yield return new WaitForSecondsRealtime(Time.fixedDeltaTime);
                         j += Time.fixedDeltaTime * cycles.timeScale;
                     }
-                    enemyInWave.Add(Instantiate(enemies[(int)enemyGroup.enemyType], enemySpawnPoints[(int)enemyAttacks[0].portalType].position, Quaternion.identity));
-                    enemyInWave[enemyInWave.Count - 1].number = enemyInWave.Count - 1;
+                    int rand = UnityEngine.Random.Range(0, 2);
+                    Enemy enemy = Instantiate(enemies[(int)enemyGroup.enemyType], warPortals[(int)enemyAttacks[0].portalType].GetSpawnPosition(rand), Quaternion.identity);
+                    enemyInWave.Add(enemy);
+                    enemy.number = enemyInWave.Count - 1;
+                    enemy.SetPath(warPortals[(int)enemyAttacks[0].portalType].GetPath(rand, enemyGroup.enemyType));
                 }
             }
             yield return new WaitUntil(() => enemyInWave.Count == 0);
@@ -109,13 +112,25 @@ public class EnemyAttacks : MonoBehaviour
         empirePortal.curHp = empirePortal.maxHp;
         ui.EnableMenuButtons();
         enemyAttacks.RemoveAt(0);
-        SetEnemiesIcons();
+        StartCoroutine(PrepareToNewAttack());
     }
 
-    void SetEnemiesIcons()
+    IEnumerator PrepareToNewAttack()
     {
-        List<int> enemies = new List<int>();
-        enemies.Add((int)enemyAttacks[0].waves[0].enemyGroups[0].enemyType);
+        yield return new WaitForEndOfFrame();
+        SetEnemiesIcons();
+        foreach (WarPortal warPortal in warPortals)
+        {
+            warPortal.ClearEnemyTypes();
+        }
+        warPortals[(int)enemyAttacks[0].portalType].SetEnemyTypes(GetUniqueEnemyTypes());
+        warPortals[(int)enemyAttacks[0].portalType].UpdatePaths();
+    }
+
+    List<EnemyType> GetUniqueEnemyTypes()
+    {
+        List<EnemyType> enemies = new List<EnemyType>();
+        enemies.Add(enemyAttacks[0].waves[0].enemyGroups[0].enemyType);
         foreach (Wave wave in enemyAttacks[0].waves)
         {
             foreach (EnemyGroup enemyGroup in wave.enemyGroups)
@@ -123,14 +138,19 @@ public class EnemyAttacks : MonoBehaviour
                 int j = 0;
                 for (int i = 0; i < enemies.Count; i++)
                 {
-                    if (enemies[i] != (int)enemyGroup.enemyType)
+                    if (enemies[i] != enemyGroup.enemyType)
                         j++;
                 }
                 if (j == enemies.Count)
-                    enemies.Add((int)enemyGroup.enemyType);
+                    enemies.Add(enemyGroup.enemyType);
             }
         }
-        ui.SetEnemiesIcons((int)enemyAttacks[0].portalType, enemies.ToArray());
+        return enemies;
+    }
+
+    void SetEnemiesIcons()
+    {
+        ui.SetEnemiesIcons((int)enemyAttacks[0].portalType, GetUniqueEnemyTypes().ToArray());
     }
 
     public void SetUIWaves(PortalType portalType)

@@ -42,4 +42,10 @@ public class OutlineManager : MonoBehaviour
         if(outline != null && !ui.cursorOnButton)
             outline.enabled = false;
     }
+
+    public void DisableOutlineStrong()
+    {
+        if (outline != null)
+            outline.enabled = false;
+    }
 }

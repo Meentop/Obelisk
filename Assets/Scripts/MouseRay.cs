@@ -13,6 +13,7 @@ public class MouseRay : MonoBehaviour
     BuildingsGrid buildingsGrid;
     RangeRenderer rangeRenderer;
     EnemyAttacks enemyAttacks;
+    WallManager wallManager;
 
     private void Awake()
     {
@@ -26,6 +27,7 @@ public class MouseRay : MonoBehaviour
         buildingsGrid = BuildingsGrid.Instance;
         rangeRenderer = RangeRenderer.Instance;
         enemyAttacks = EnemyAttacks.Instance;
+        wallManager = WallManager.Instance;
     }
 
     public Vector3 startMousePos, curMousePos;
@@ -58,16 +60,17 @@ public class MouseRay : MonoBehaviour
                     rangeRenderer.DrawRange(20, building.GetComponent<CombatBuilding>());
                 else
                     rangeRenderer.Clear();
-
-                if (ui.EnabledBuildingsGrid() && buildingsGrid.buildingsMode == BuildingsMode.Destruction && !building.undestroyable)
-                {
-                    buildingsGrid.ClearGrid(building);
-                    hit.collider.GetComponent<Building>().Destroy();
-                }
-                else if (ui.EnabledBuildingsGrid() && buildingsGrid.buildingsMode == BuildingsMode.Movement && !building.unmovable && buildingsGrid.IsFlyingBuildingNull())
+                //movement
+                if (ui.EnabledBuildingsGrid() && buildingsGrid.buildingsMode == BuildingsMode.Movement && !building.unmovable && buildingsGrid.IsFlyingBuildingNull())
                 {
                     buildingsGrid.SetFlyingBuilding(building);
-                    buildingsGrid.ClearGrid(building);
+                    if (building is Fortification)
+                    {
+                        wallManager.DestroyWalls(building.GetComponent<Fortification>());
+                        buildingsGrid.ClearWallGrid(building.transform.position.x, building.transform.position.z);
+                    }
+                    else
+                        buildingsGrid.ClearGrid(building);
                     buildingsGrid.SaveBuildingPlace(building);
                 }
             }

@@ -23,11 +23,11 @@ public class Resources : MonoBehaviour
         for (int i = 0; i < resources.Length; i++)
             UpdateResourceNumber((Resource)i);
         AddCapasity(Resource.Food, 50);
-        AddCapasity(Resource.Wood, 100);
-        AddCapasity(Resource.Metal, 50);
+        AddCapasity(Resource.Wood, 400);
+        AddCapasity(Resource.Metal, 400);
         AddResource(Resource.Food, 49);
-        AddResource(Resource.Wood, 100);
-        AddResource(Resource.Metal, 50);
+        AddResource(Resource.Wood, 450);
+        AddResource(Resource.Metal, 400);
         AddResource(Resource.ResearchPoint, 999);
         AddResource(Resource.MatterGenerator, 5);
     }

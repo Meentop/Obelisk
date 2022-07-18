@@ -116,13 +116,18 @@ public class Cycles : MonoBehaviour
         blockedPause = true;
     }
 
+    public void UnblockPause()
+    {
+        blockedPause = false;
+    }
+
     //Day or Night
 
     void SetLightsRotation()
     {
-        Quaternion nextSunRotation = Quaternion.Euler(curCycleTime / cycleTime * 360, -45, 0);
+        Quaternion nextSunRotation = Quaternion.Euler(curCycleTime / cycleTime * 360, -35, 0);
         mySun.transform.localRotation = Quaternion.Lerp(mySun.transform.localRotation, nextSunRotation, 0.125f);
-        Quaternion nextMoonRotation = Quaternion.Euler(curCycleTime / cycleTime * 360 + 180f, -45, 0);
+        Quaternion nextMoonRotation = Quaternion.Euler(curCycleTime / cycleTime * 360 + 180f, -35, 0);
         myMoon.transform.localRotation = Quaternion.Lerp(myMoon.transform.localRotation, nextMoonRotation, 0.125f);
     }
 

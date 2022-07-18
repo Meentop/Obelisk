@@ -218,6 +218,7 @@ public class UI : MonoBehaviour
 
     public void SetTimeSpeedButton(int position)
     {
+        print(position);
         foreach (Button button in speedButtons)
         {
             button.interactable = true;
@@ -225,11 +226,16 @@ public class UI : MonoBehaviour
         speedButtons[position].interactable = false;
     }
 
-    public bool cursorOnButton { get; private set; } = false;
+    public bool cursorOnButton /*{ get; private set; } */= false;
     public void DisableAllPanels()
     {
         if ((IsEnabledMenuButtons() || enemyAttacks.IsEnemyAttack()) && !cursorOnButton)
             DisableAllBuildingPanels();
+    }
+
+    public void DisableAllPanelsStrong()
+    {
+        DisableAllBuildingPanels();
     }
 
     // fot time scale button
@@ -531,7 +537,7 @@ public class UI : MonoBehaviour
 
     public void SetCyclesToNewPerson(float cycles)
     {
-        cyclesToNewPerson.text = "Cycles to a new person: " + cycles.ToString("0.##");
+        cyclesToNewPerson.text = cycles.ToString("0.##");
     }
 
     public void SetEnableEmpirePortalHP(bool value)
@@ -576,7 +582,7 @@ public class UI : MonoBehaviour
         timeToAttackTexts[portal].text = time.ToString("0.##");
     }
 
-    public void SetEnemiesIcons(int portal, int[] counts)
+    public void SetEnemiesIcons(int portal, EnemyType[] enemyTypes)
     {
         foreach (Transform transform in horizontalGroups)
         {
@@ -586,11 +592,11 @@ public class UI : MonoBehaviour
             }
         }
 
-        foreach (int enemyType in counts)
+        foreach (EnemyType enemyType in enemyTypes)
         {
-            Instantiate(enemyIcon, horizontalGroups[portal]).GetComponent<Image>().sprite = enemiesSprites[enemyType];
+            Instantiate(enemyIcon, horizontalGroups[portal]).GetComponent<Image>().sprite = enemiesSprites[(int)enemyType];
         }
-        warPortalsBackgrounds[portal].sizeDelta = new Vector2(185.5f + (60 * counts.Length), warPortalsBackgrounds[portal].sizeDelta.y);
+        warPortalsBackgrounds[portal].sizeDelta = new Vector2(185.5f + (60 * enemyTypes.Length), warPortalsBackgrounds[portal].sizeDelta.y);
     }
 
     public void DestroyAllWaveBlocks()
@@ -704,7 +710,7 @@ public class UI : MonoBehaviour
         }
     }
 
-    public void SetBuildingForPriority(CombatBuilding building)
+    public void SetBuildingForPrioriting(CombatBuilding building)
     {
         combatBuilding = building;
         SetPriority((int)combatBuilding.priority);
@@ -758,5 +764,76 @@ public class UI : MonoBehaviour
         infoEnemyName.text = enemyType.ToString();
         infoEnemyImage.sprite = enemiesImages[(int)enemyType];
         infoEnemyDescription.text = enemiesDescriptions[(int)enemyType];
+    }
+
+    //Barrier
+
+    Barrier barrier;
+
+    [Header("Barrier Panel")]
+    [SerializeField] GameObject barrierPanel;
+    [SerializeField] Image barrierImage;
+    [SerializeField] Text barrierText;
+
+    public void SetBuildingForBarriering(Barrier building)
+    {
+        if (IsEnabledMenuButtons())
+        {
+            DisableAllBuildingPanels();
+            Enable(barrierPanel);
+            barrier = building;
+            SetBarrierFor((int)barrier.GetBarrierFor());
+        }
+    }
+
+    void SetBarrierFor(int value)
+    {
+        barrierImage.sprite = enemiesSprites[value];
+        barrier.SetBarrierFor((BarrierFor)value);
+        barrierText.text = barrier.GetBarrierFor().ToString();
+    }
+
+    public void NextBarrierFor()
+    {
+        int i = (int)barrier.GetBarrierFor() + 1;
+        if (i > enemiesSprites.Length - 1)
+            i = 0;
+        SetBarrierFor(i);
+    }
+
+    public void LastBarrierFor()
+    {
+        int i = (int)barrier.GetBarrierFor() - 1;
+        if (i < 0)
+            i = enemiesSprites.Length - 1;
+        SetBarrierFor(i);
+    }
+
+    //Incoming portal
+
+    [Header("Incoming portal")]
+    [SerializeField] GameObject incomingPortalPanel;
+
+    public void EnableIncomingPortalPanel()
+    {
+        if (IsEnabledMenuButtons())
+        {
+            DisableAllBuildingPanels();
+            Enable(incomingPortalPanel);
+        }
+    }
+
+    //Outgoing portal
+
+    [Header("Outgoing portal")]
+    [SerializeField] GameObject outgoingPortalPanel;
+
+    public void EnableOutgoingPortalPanel()
+    {
+        if (IsEnabledMenuButtons())
+        {
+            DisableAllBuildingPanels();
+            Enable(outgoingPortalPanel);
+        }
     }
 }

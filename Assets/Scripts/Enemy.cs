@@ -1,11 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.AI;
 
 public abstract class Enemy : MonoBehaviour
 {
-    NavMeshAgent agent;
     Cycles cycles;
     EnemyAttacks enemyAttacks;
 
@@ -21,21 +19,44 @@ public abstract class Enemy : MonoBehaviour
 
     public Transform center;
     [SerializeField] Transform hpBar;
+    [SerializeField] Vector2Int[] path;
 
     private void Start()
     {
         cycles = Cycles.Instance;
         enemyAttacks = EnemyAttacks.Instance;
-        agent = GetComponent<NavMeshAgent>();
-        agent.destination = FindObjectOfType<EmpirePortal>().center.position;
         maxHp = baseHp + (lvl * lvlStep);
         curHp = maxHp;
         UpdateHPBar();
     }
 
-    private void Update()
+    int curPosition = 0;
+    public bool invulnerable /*{ get; private set; } */= false;
+    private void FixedUpdate()
     {
-        agent.speed = baseSpeed * cycles.timeScale;
+        if (path.Length > 0)
+        {
+            Vector3 target = new Vector3(path[curPosition].x, 0, path[curPosition].y);
+            transform.position = Vector3.MoveTowards(transform.position, target, baseSpeed * cycles.timeScale);
+            if (Vector3.Distance(transform.position, target) < 0.001f)
+            {
+                curPosition++;
+                CheckPortal();
+            }
+        }
+    }
+
+    void CheckPortal()
+    {
+        if (Vector3.Distance(transform.position, new Vector3(path[curPosition].x, 0, path[curPosition].y)) > 1.01f)
+            invulnerable = true;
+        else
+            invulnerable = false;
+    }
+
+    public void SetPath(Vector2Int[] path)
+    {
+        this.path = path;
     }
 
     public void GetDamage(float damage)

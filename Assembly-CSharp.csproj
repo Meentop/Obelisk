@@ -68,16 +68,23 @@
     <Compile Include="Assets\Scripts\Projectile.cs" />
     <Compile Include="Assets\Scripts\Person.cs" />
     <Compile Include="Assets\Scripts\EnemyAttacks.cs" />
+    <Compile Include="Assets\Scripts\PortalManager.cs" />
+    <Compile Include="Assets\Scripts\Wall.cs" />
     <Compile Include="Assets\Scripts\BuildingsGrid.cs" />
+    <Compile Include="Assets\Scripts\DestructionBox.cs" />
     <Compile Include="Assets\Scripts\EnemyGroupBlock.cs" />
+    <Compile Include="Assets\Scripts\Barrier.cs" />
+    <Compile Include="Assets\Scripts\EnemyDescriptionButton.cs" />
     <Compile Include="Assets\Scripts\PersonStatBlock.cs" />
-    <Compile Include="Assets\Scripts\PathChecker.cs" />
+    <Compile Include="Assets\Scripts\WallManager.cs" />
     <Compile Include="Assets\Scripts\ArcherTower.cs" />
     <Compile Include="Assets\Scripts\EmpirePortal.cs" />
     <Compile Include="Assets\Scripts\FeedStatBlock.cs" />
+    <Compile Include="Assets\Scripts\DestructionLines.cs" />
     <Compile Include="Assets\Scripts\SortButtonGroup.cs" />
     <Compile Include="Assets\Scripts\SortButton.cs" />
     <Compile Include="Assets\Scripts\MouseRay.cs" />
+    <Compile Include="Assets\Scripts\OutgoingPortal.cs" />
     <Compile Include="Assets\Scripts\Resources.cs" />
     <Compile Include="Assets\Scripts\BuildingButton.cs" />
     <Compile Include="Assets\Scripts\CombatBuilding.cs" />
@@ -88,9 +95,10 @@
     <Compile Include="Assets\Scripts\WorldCanvaz.cs" />
     <Compile Include="Assets\Scripts\Grounded.cs" />
     <Compile Include="Assets\Scripts\PersonListStat.cs" />
+    <Compile Include="Assets\Scripts\IncomingPortal.cs" />
     <Compile Include="Assets\Scripts\PersonCreator.cs" />
     <Compile Include="Assets\Scripts\UI.cs" />
-    <Compile Include="Assets\Scripts\EnemyDescriptionButton.cs" />
+    <Compile Include="Assets\Scripts\Transportation.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Shaders\OutlineMask.shader" />

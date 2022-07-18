@@ -39,12 +39,7 @@ public abstract class Building : MonoBehaviour
     bool colored = false;
     private void OnMouseEnter()
     {
-        if (ui.EnabledBuildingsGrid() && buildingsGrid.buildingsMode == BuildingsMode.Destruction && !undestroyable)
-        {
-            SetTransparent(false);
-            colored = true;
-        }
-        else if(ui.EnabledBuildingsGrid() && buildingsGrid.buildingsMode == BuildingsMode.Movement && !unmovable && buildingsGrid.IsFlyingBuildingNull())
+        if(ui.EnabledBuildingsGrid() && buildingsGrid.buildingsMode == BuildingsMode.Movement && !unmovable && buildingsGrid.IsFlyingBuildingNull())
         {
             SetTransparent(true);
             colored = true;
@@ -120,6 +115,7 @@ public abstract class Building : MonoBehaviour
         {
             resources.AddResource(cost[i].resource, cost[i].cost);
         }
+        buildingsGrid.RemoveBuilding(this);
         Destroy(gameObject);
     }
 

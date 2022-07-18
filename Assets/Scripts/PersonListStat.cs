@@ -23,11 +23,11 @@ public class PersonListStat : PersonStatBlock
     {
         if (person.workplace != null)
         {
-            ui.EnableMenuButtons();
             IWorkplace iWorkplace = (IWorkplace)person.workplace;
             iWorkplace.RemoveWorker(number);
             person.SpawnAfterBuilding();
             ui.DisablePersonsList();
+            ui.SetCursorOnButton(false);
         }
     }
 

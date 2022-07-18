@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public abstract class CombatBuilding : Building, IWorkplace
 {
@@ -12,7 +13,7 @@ public abstract class CombatBuilding : Building, IWorkplace
     [SerializeField] float baseAttackSpeed; // shoots per second
     float curAttackSpeed;
     float reloadTime;
-    [SerializeField] float curReloadTime;
+    float curReloadTime;
     public float radius;
     [SerializeField] float rotateSpeed;
     [SerializeField] float projectileSpeed;
@@ -22,7 +23,7 @@ public abstract class CombatBuilding : Building, IWorkplace
     [SerializeField] Transform personSpawnPoint;
     [SerializeField] GameObject projectile;
     [SerializeField] Transform shootPoint;
-    [SerializeField] GameObject sleed;
+    [SerializeField] GameObject sleep;
 
     Person person = null;
 
@@ -59,6 +60,7 @@ public abstract class CombatBuilding : Building, IWorkplace
             Vector3 delta = (target.transform.position - center.position).normalized;
             Vector3 direction = new Vector3(delta.x, 0, delta.z);
             rotationAttackPoint.forward = Vector3.MoveTowards(rotationAttackPoint.forward, direction, rotateSpeed * cycles.timeScale);
+            SetPersonPosition();
             if(Vector3.Distance(direction, rotationAttackPoint.forward) < 0.0001f && curReloadTime <= 0)
             {
                 Shoot();
@@ -89,9 +91,10 @@ public abstract class CombatBuilding : Building, IWorkplace
         if (enemyAttacks.IsEnemyAttack() && person != null)
         {
             Collider[] colliders = Physics.OverlapSphere(center.position, radius, LayerMask.GetMask("Enemy"));
-            enemies = new Enemy[colliders.Length];
-            for (int i = 0; i < colliders.Length; i++)
-                enemies[i] = colliders[i].GetComponent<Enemy>();
+            IEnumerable<Collider> coll = colliders.Where(enemy => enemy.GetComponent<Enemy>().invulnerable == false);
+            enemies = new Enemy[coll.Count()];
+            for (int i = 0; i < coll.Count(); i++)
+                enemies[i] = coll.ElementAt(i).GetComponent<Enemy>();
         }
     }
     bool HasTarget()
@@ -192,18 +195,21 @@ public abstract class CombatBuilding : Building, IWorkplace
     {
         base.SetPosition(pos);
         if (person != null)
-        {
-            person.transform.position = personSpawnPoint.position;
-            person.nextPosition = personSpawnPoint.position;
-        }
+            SetPersonPosition();
     }
 
     public override void Click()
     {
-        //before enemies attack set cur speed attack
         SetCurAttackSpeed();
         ui.EnableCombatPanel(buildingsName, this, person, damage, curAttackSpeed, radius, rotateSpeed, projectileSpeed);
-        ui.SetBuildingForPriority(this);
+        ui.SetBuildingForPrioriting(this);
+    }
+
+    public override void Destroy()
+    {
+        if(person != null)
+            RemoveWorker(0);
+        base.Destroy();
     }
 
     public bool HasWorkplace()
@@ -216,13 +222,12 @@ public abstract class CombatBuilding : Building, IWorkplace
         if (this.person == null)
         {
             this.person = person.GetComponent<Person>();
-            person.transform.position = personSpawnPoint.position;
-            this.person.nextPosition = personSpawnPoint.position;
+            SetPersonPosition();
             person.GetComponent<Person>().workplace = this;
             this.person.inCombatBuilding = true;
             SetCurAttackSpeed();
             ui.UpdateCombatStatBlock(this, this.person, curAttackSpeed);
-            sleed.SetActive(false);
+            sleep.SetActive(false);
         }
     }
 
@@ -230,12 +235,19 @@ public abstract class CombatBuilding : Building, IWorkplace
     {
         Person person = this.person;
         person.workplace = null;
-        person.gameObject.SetActive(true);
         person.inCombatBuilding = false;
+        person.nextPosition = new Vector3(person.transform.position.x, 0f, person.transform.position.z);
+        person.transform.position = person.nextPosition;
         curAttackSpeed = 0;
         this.person = null;
-        sleed.SetActive(true);
+        sleep.SetActive(true);
         return person;
+    }
+
+    void SetPersonPosition()
+    {
+        person.transform.position = personSpawnPoint.position;
+        person.nextPosition = personSpawnPoint.position;
     }
 
     public int FindIndex(Person person)
