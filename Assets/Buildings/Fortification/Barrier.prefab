@@ -138,10 +138,10 @@ MonoBehaviour:
     cost: 20
   - resource: 2
     cost: 20
+  - resource: 4
+    cost: 1
   undestroyable: 0
   unmovable: 0
-  image: {fileID: 0}
-  text: {fileID: 0}
   barrierFor: 0
 --- !u!65 &5229374765809870933
 BoxCollider:

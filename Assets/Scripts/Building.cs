@@ -5,7 +5,7 @@ using UnityEngine;
 
 public abstract class Building : MonoBehaviour
 {
-    public string buildingsName;
+    public string buildingsName, description;
 
     public Transform center;
     protected Resources resources;

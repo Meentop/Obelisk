@@ -68,38 +68,50 @@ public class EnemyAttacks : MonoBehaviour
         CombatBuilding[] combats = FindObjectsOfType<CombatBuilding>();
         foreach (CombatBuilding combat in combats)
             combat.SetCurAttackSpeed();
-        StartCoroutine(SpawnEnemy());
+        StartCoroutine(SpawnWaves());
     }
 
     List<Enemy> enemyInWave = new List<Enemy>();
-    IEnumerator SpawnEnemy()
+    IEnumerator SpawnWaves()
     {
         foreach (Wave wave in enemyAttacks[0].waves)
         {
             enemyInWave.Clear();
             foreach (EnemyGroup enemyGroup in wave.enemyGroups)
             {
-                for (int i = 0; i < enemyGroup.enemyCount; i++)
+                float g = 0;
+                while (g < enemyGroup.firstSpawnOffset)
                 {
-                    if(cycles.timeScale == 0)
-                        yield return new WaitWhile(() => cycles.timeScale == 0);
-                    float j = 0;
-                    while (j < enemyGroup.spawnInterval)
-                    {
-                        yield return new WaitForSecondsRealtime(Time.fixedDeltaTime);
-                        j += Time.fixedDeltaTime * cycles.timeScale;
-                    }
-                    int rand = UnityEngine.Random.Range(0, 2);
-                    Enemy enemy = Instantiate(enemies[(int)enemyGroup.enemyType], warPortals[(int)enemyAttacks[0].portalType].GetSpawnPosition(rand), Quaternion.identity);
-                    enemyInWave.Add(enemy);
-                    enemy.number = enemyInWave.Count - 1;
-                    enemy.SetPath(warPortals[(int)enemyAttacks[0].portalType].GetPath(rand, enemyGroup.enemyType));
+                    yield return new WaitForSecondsRealtime(Time.fixedDeltaTime);
+                    g += Time.fixedDeltaTime * cycles.timeScale;
                 }
+                StartCoroutine(SpawnGroup(enemyGroup));
+                yield return new WaitUntil(() => enemyInWave.Count > 0);
             }
             yield return new WaitUntil(() => enemyInWave.Count == 0);
         }
         yield return new WaitForSecondsRealtime(5);
         EndAttack();
+    }
+
+    IEnumerator SpawnGroup(EnemyGroup enemyGroup)
+    {
+        for (int i = 0; i < enemyGroup.enemyCount; i++)
+        {
+            if (cycles.timeScale == 0)
+                yield return new WaitWhile(() => cycles.timeScale == 0);
+            int rand = UnityEngine.Random.Range(0, 2);
+            Enemy enemy = Instantiate(enemies[(int)enemyGroup.enemyType], warPortals[(int)enemyAttacks[0].portalType].GetSpawnPosition(rand), Quaternion.identity);
+            enemyInWave.Add(enemy);
+            enemy.number = enemyInWave.Count - 1;
+            enemy.SetPath(warPortals[(int)enemyAttacks[0].portalType].GetPath(rand, enemyGroup.enemyType));
+            float j = 0;
+            while (j < enemyGroup.spawnInterval)
+            {
+                yield return new WaitForSecondsRealtime(Time.fixedDeltaTime);
+                j += Time.fixedDeltaTime * cycles.timeScale;
+            }
+        }
     }
 
     void EndAttack()
@@ -162,7 +174,8 @@ public class EnemyAttacks : MonoBehaviour
                 ui.CreateWaveBlocks(i + 1);
                 foreach (EnemyGroup enemyGroup in enemyAttacks[0].waves[i].enemyGroups)
                 {
-                    ui.InitNewEnemyGroupBlock(i, enemyGroup.enemyType, enemyGroup.spawnInterval > 0.5f, (int)enemies[(int)enemyGroup.enemyType].GetCurHP(enemyGroup.lvl), enemyGroup.enemyCount);
+                    ui.InitNewEnemyGroupBlock(i, enemyGroup.enemyType, enemyGroup.spawnInterval > 0.5f, (int)enemies[(int)enemyGroup.enemyType].GetCurHP(enemyGroup.lvl), 
+                        (int)enemies[(int)enemyGroup.enemyType].GetCurMagic(enemyGroup.lvl), enemyGroup.enemyCount);
                 }
             }
         }
@@ -201,7 +214,10 @@ public enum EnemyType
 {
     Ork,
     Troll,
-    Gremlin
+    Gremlin,
+    MagicOrk,
+    MagicTroll,
+    MagicGremlin
 }
 
 [Serializable]
@@ -224,6 +240,8 @@ public class Wave
 public class EnemyGroup
 {
     public EnemyType enemyType;
+
+    public float firstSpawnOffset;
 
     public float spawnInterval;
 

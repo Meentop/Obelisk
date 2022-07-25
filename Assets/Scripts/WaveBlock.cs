@@ -15,10 +15,10 @@ public class WaveBlock : MonoBehaviour
         this.order.text = order.ToString();
     }
 
-    public void InitNewEnemyGroup(EnemyType enemyType, bool lowDensity, int healthCount, int enemyCount)
+    public void InitNewEnemyGroup(EnemyType enemyType, bool lowDensity, int healthCount, int magicCount, int enemyCount)
     {
         EnemyGroupBlock block = Instantiate(blockPrefab, verticalGroup).GetComponent<EnemyGroupBlock>();
-        block.Initialization(enemyType, lowDensity, healthCount, enemyCount);
+        block.Initialization(enemyType, lowDensity, healthCount, magicCount, enemyCount);
         GetComponent<RectTransform>().sizeDelta = new Vector3(GetComponent<RectTransform>().sizeDelta.x, 10 + (40 * verticalGroup.childCount));
     }
 }

@@ -91,6 +91,8 @@ MonoBehaviour:
     cost: 20
   - resource: 2
     cost: 20
+  - resource: 4
+    cost: 1
   undestroyable: 0
   unmovable: 0
   unrelated: {fileID: 7791935282590720526}

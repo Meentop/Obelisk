@@ -91,6 +91,7 @@ public class UI : MonoBehaviour
     [Header("Industrial Panel")]
     [SerializeField] GameObject industrialPanel;
     [SerializeField] Text industrialName;
+    [SerializeField] Text industrialDescription;
     [SerializeField] Image industrialResource;
     [SerializeField] Text industrialProduction;
     [SerializeField] Text industrialWorkersCount;
@@ -104,18 +105,14 @@ public class UI : MonoBehaviour
     [Header("Combat Panel")]
     [SerializeField] GameObject combatPanel;
     [SerializeField] Text combatName;
-    [SerializeField] Text damage;
-    [SerializeField] Text attackSpeed;
-    [SerializeField] Text radius;
-    [SerializeField] Text rotateSpeed;
-    [SerializeField] Text projectileSpeed;
+    [SerializeField] Text combatDescription;
+    [SerializeField] Transform combatCharacteristics;
     [SerializeField] GameObject combatPersonStat;
     [SerializeField] Transform combatPersonStats;
 
     [Header("Attack priority")]
     [SerializeField] Text priorityText;
-    [SerializeField] Image priorityImage;
-    [SerializeField] Sprite[] prioritySprites = new Sprite[6];
+    [SerializeField] Toggle[] priorityToggles;
 
     [Header("Enemy Info")]
     [SerializeField] GameObject enemyInfoPanel;
@@ -218,7 +215,6 @@ public class UI : MonoBehaviour
 
     public void SetTimeSpeedButton(int position)
     {
-        print(position);
         foreach (Button button in speedButtons)
         {
             button.interactable = true;
@@ -612,9 +608,9 @@ public class UI : MonoBehaviour
         Instantiate(waveBlock, verticalGroup).GetComponent<WaveBlock>().InitWaveBlock(order);
     }
 
-    public void InitNewEnemyGroupBlock(int waveOrder, EnemyType enemyType, bool lowDensity, int healthCount, int enemyCount)
+    public void InitNewEnemyGroupBlock(int waveOrder, EnemyType enemyType, bool lowDensity, int healthCount, int magicCount, int enemyCount)
     {
-        verticalGroup.GetChild(waveOrder).GetComponent<WaveBlock>().InitNewEnemyGroup(enemyType, lowDensity, healthCount, enemyCount);
+        verticalGroup.GetChild(waveOrder).GetComponent<WaveBlock>().InitNewEnemyGroup(enemyType, lowDensity, healthCount, magicCount, enemyCount);
     }
 
     //Storage
@@ -633,13 +629,14 @@ public class UI : MonoBehaviour
 
     //Industrial
 
-    public void EnableIndustrialPanel(IndustrialBuilding building, string name, int resource, float production, List<Person> persons, int maxWorkers)
+    public void EnableIndustrialPanel(IndustrialBuilding building, string name, string description, int resource, float production, List<Person> persons, int maxWorkers)
     {
         if (IsEnabledMenuButtons() || enemyAttacks.IsEnemyAttack())
         {
             DisableAllBuildingPanels();
             Enable(industrialPanel);
             industrialName.text = name;
+            industrialDescription.text = description;
             industrialResource.sprite = resourcesSprites[resource];
             industrialProduction.text = production.ToString("0.##");
             SpawnIndustrialStatBlocks(building, persons, maxWorkers);
@@ -691,18 +688,14 @@ public class UI : MonoBehaviour
 
     CombatBuilding combatBuilding;
 
-    public void EnableCombatPanel(string name, IWorkplace building, Person person, int damage, float attackSpeed, float radius, float rotateSpeed, float projectileSpeed)
+    public void EnableCombatPanel(string name, string description, IWorkplace building, Person person, int damage, float attackSpeed, float radius, float rotateSpeed, float projectileSpeed)
     {
         if (IsEnabledMenuButtons() || enemyAttacks.IsEnemyAttack())
         {
             DisableAllBuildingPanels();
             Enable(combatPanel);
             combatName.text = name;
-            this.damage.text = "Damage: " + damage.ToString();
-            this.attackSpeed.text = "Attack speed: " + attackSpeed.ToString();
-            this.radius.text = "Radius: " + radius.ToString();
-            this.rotateSpeed.text = "Rotate speed: " + rotateSpeed.ToString();
-            this.projectileSpeed.text = "Projectile speed: " + projectileSpeed.ToString();
+            combatDescription.text = description;
             if (combatPersonStats.childCount > 0)
                 Destroy(combatPersonStats.GetChild(0).gameObject);
             if (person != null)
@@ -713,7 +706,8 @@ public class UI : MonoBehaviour
     public void SetBuildingForPrioriting(CombatBuilding building)
     {
         combatBuilding = building;
-        SetPriority((int)combatBuilding.priority);
+        priorityToggles[(int)combatBuilding.priority].isOn = true;
+        priorityText.text = combatBuilding.priority.ToString();
     }
 
 
@@ -721,7 +715,6 @@ public class UI : MonoBehaviour
     {
         if (combatPanel.activeInHierarchy)
         {
-            this.attackSpeed.text = "Attack speed: " + attackSpeed.ToString();
             SpawnCombatStatBlock(building, person);
         }
     }
@@ -732,27 +725,23 @@ public class UI : MonoBehaviour
         block.Initialization(0, building, person.isHungry, person.fullName);
     }
 
-    void SetPriority(int priority)
+    public void SpawnCharacteristic(GameObject characteristic, float value)
     {
-        priorityImage.sprite = prioritySprites[priority];
+        Instantiate(characteristic, combatCharacteristics).transform.GetChild(0).GetComponent<Text>().text = value.ToString();
+    }
+
+    public void DestroyCharacteristics()
+    {
+        foreach (Transform transform in combatCharacteristics)
+        {
+            Destroy(transform.gameObject);
+        }
+    }
+
+    public void SetPriority(int priority)
+    {
         combatBuilding.priority = (Priority)priority;
         priorityText.text = combatBuilding.priority.ToString();
-    }
-
-    public void NextPriority()
-    {
-        int i = (int)combatBuilding.priority + 1;
-        if (i > 5)
-            i = 0;
-        SetPriority(i);
-    }
-
-    public void LastPriority()
-    {
-        int i = (int)combatBuilding.priority - 1;
-        if (i < 0)
-            i = 5;
-        SetPriority(i);
     }
 
     //Enemy Info
@@ -772,41 +761,30 @@ public class UI : MonoBehaviour
 
     [Header("Barrier Panel")]
     [SerializeField] GameObject barrierPanel;
-    [SerializeField] Image barrierImage;
     [SerializeField] Text barrierText;
+    [SerializeField] Toggle[] barrierToggles;
+    [SerializeField] string[] enemiesNames;
 
-    public void SetBuildingForBarriering(Barrier building)
+    public void EnableBarrierPanel()
     {
         if (IsEnabledMenuButtons())
         {
             DisableAllBuildingPanels();
             Enable(barrierPanel);
-            barrier = building;
-            SetBarrierFor((int)barrier.GetBarrierFor());
         }
     }
 
-    void SetBarrierFor(int value)
+    public void SetBuildingForBarriering(Barrier building)
     {
-        barrierImage.sprite = enemiesSprites[value];
-        barrier.SetBarrierFor((BarrierFor)value);
-        barrierText.text = barrier.GetBarrierFor().ToString();
+        barrier = building;
+        barrierToggles[(int)barrier.GetBarrierFor()].isOn = true;
+        barrierText.text = enemiesNames[(int)barrier.GetBarrierFor()];
     }
 
-    public void NextBarrierFor()
+    public void SetBarrierFor(int barrierFor)
     {
-        int i = (int)barrier.GetBarrierFor() + 1;
-        if (i > enemiesSprites.Length - 1)
-            i = 0;
-        SetBarrierFor(i);
-    }
-
-    public void LastBarrierFor()
-    {
-        int i = (int)barrier.GetBarrierFor() - 1;
-        if (i < 0)
-            i = enemiesSprites.Length - 1;
-        SetBarrierFor(i);
+        barrier.SetBarrierFor((EnemyType)barrierFor);
+        barrierText.text = enemiesNames[(int)barrier.GetBarrierFor()];
     }
 
     //Incoming portal

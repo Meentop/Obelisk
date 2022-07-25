@@ -5,27 +5,27 @@ using System.Linq;
 
 public abstract class CombatBuilding : Building, IWorkplace
 {
-    EnemyAttacks enemyAttacks;
+    protected EnemyAttacks enemyAttacks;
     Cycles cycles;
 
-    [Header("Characteristics")]
-    [SerializeField] int damage;
-    [SerializeField] float baseAttackSpeed; // shoots per second
-    float curAttackSpeed;
+    [Header("Base Characteristics")]
+    [SerializeField] protected int damage;
+    [SerializeField] float baseAttackSpeed; 
+    protected float curAttackSpeed;
     float reloadTime;
     float curReloadTime;
     public float radius;
-    [SerializeField] float rotateSpeed;
-    [SerializeField] float projectileSpeed;
+    [SerializeField] protected float rotateSpeed;
+    [SerializeField] protected float projectileSpeed;
 
     [Header("Other")]
     public Transform rotationAttackPoint;
     [SerializeField] Transform personSpawnPoint;
-    [SerializeField] GameObject projectile;
-    [SerializeField] Transform shootPoint;
+    [SerializeField] protected GameObject projectile;
+    [SerializeField] protected Transform shootPoint;
     [SerializeField] GameObject sleep;
 
-    Person person = null;
+    protected Person person = null;
 
     public Priority priority = Priority.First;
 
@@ -37,8 +37,8 @@ public abstract class CombatBuilding : Building, IWorkplace
         curReloadTime = 0;
     }
 
-    [SerializeField] Enemy[] enemies;
-    [SerializeField] Enemy target;
+    [SerializeField] protected Enemy[] enemies;
+    protected Enemy target;
     protected override void Update()
     {
         base.Update();
@@ -57,11 +57,11 @@ public abstract class CombatBuilding : Building, IWorkplace
     {
         if (target != null)
         {
-            Vector3 delta = (target.transform.position - center.position).normalized;
-            Vector3 direction = new Vector3(delta.x, 0, delta.z);
-            rotationAttackPoint.forward = Vector3.MoveTowards(rotationAttackPoint.forward, direction, rotateSpeed * cycles.timeScale);
+            Vector3 direction = (target.transform.position - rotationAttackPoint.position).normalized;
+            Vector3 angle = new Vector3(0, Mathf.Atan2(direction.x, direction.z) * (180 / Mathf.PI), 0);
+            rotationAttackPoint.rotation = Quaternion.RotateTowards(rotationAttackPoint.rotation, Quaternion.Euler(angle), rotateSpeed * cycles.timeScale);
             SetPersonPosition();
-            if(Vector3.Distance(direction, rotationAttackPoint.forward) < 0.0001f && curReloadTime <= 0)
+            if(Quaternion.Angle(rotationAttackPoint.rotation, Quaternion.Euler(angle)) <= 1f && curReloadTime <= 0)
             {
                 Shoot();
                 curReloadTime = reloadTime;
@@ -69,12 +69,12 @@ public abstract class CombatBuilding : Building, IWorkplace
         }
     }
 
-    void Shoot()
+    protected virtual void Shoot()
     {
         if (person != null)
         {
             Projectile proj = Instantiate(projectile, shootPoint.position, Quaternion.identity).GetComponent<Projectile>();
-            proj.Inisialization(target, projectileSpeed, damage);
+            proj.BasicInit(target, projectileSpeed, damage);
         }
     }
 
@@ -86,12 +86,13 @@ public abstract class CombatBuilding : Building, IWorkplace
 
 
 
-    void SetEnemies()
+    
+    protected virtual void SetEnemies()
     {
         if (enemyAttacks.IsEnemyAttack() && person != null)
         {
             Collider[] colliders = Physics.OverlapSphere(center.position, radius, LayerMask.GetMask("Enemy"));
-            IEnumerable<Collider> coll = colliders.Where(enemy => enemy.GetComponent<Enemy>().invulnerable == false);
+            IEnumerable<Collider> coll = colliders.Where(enemy => enemy.GetComponent<Enemy>().invulnerable == false).Where(enemy => !enemy.GetComponent<Enemy>().HasMagic());
             enemies = new Enemy[coll.Count()];
             for (int i = 0; i < coll.Count(); i++)
                 enemies[i] = coll.ElementAt(i).GetComponent<Enemy>();
@@ -106,89 +107,29 @@ public abstract class CombatBuilding : Building, IWorkplace
         }
         return false;
     }
-
     void DefineTarget()
     {
-        if (enemies.Length < 1)
+        if (enemyAttacks.IsEnemyAttack())
         {
-            target = null;
-            return;
-        }
-        if(priority == Priority.First)
-        {
-            int minNumber = 100;
-            Enemy first = enemies[0];
-            foreach (Enemy enemy in enemies)
+            if (enemies.Length < 1)
             {
-                if (enemy.number < minNumber)
-                {
-                    first = enemy;
-                    minNumber = enemy.number;
-                }
+                target = null;
+                return;
             }
-            target = first;
+            else if (priority == Priority.First)
+                target = enemies.OrderBy(enemy => enemy.number).First();
+            else if (priority == Priority.Last)
+                target = enemies.OrderBy(enemy => enemy.number).Last(); 
+            else if (priority == Priority.Weakest) 
+                target = enemies.OrderBy(enemy => enemy.strength).ThenBy(enemy => enemy.number).First();
+            else if (priority == Priority.Strongest)
+                target = enemies.OrderBy(enemy => enemy.strength).ThenByDescending(enemy => enemy.number).Last();
+            else if (priority == Priority.Nearest)
+                target = enemies.OrderBy(enemy => Vector3.Distance(enemy.transform.position, center.position)).First();
+            else if (priority == Priority.Random)
+                target = enemies[Random.Range(0, enemies.Length)];
         }
-        else if(priority == Priority.Last)
-        {
-            int maxNumber = 0;
-            Enemy last = enemies[0];
-            foreach (Enemy enemy in enemies)
-            {
-                if (enemy.number > maxNumber)
-                {
-                    last = enemy;
-                    maxNumber = enemy.number;
-                }
-            }
-            target = last;
-        }
-        else if(priority == Priority.Weakest)
-        {
-            int minStrength = 100;
-            Enemy weakest = enemies[0];
-            foreach (Enemy enemy in enemies)
-            {
-                if (enemy.strength < minStrength)
-                {
-                    weakest = enemy;
-                    minStrength = enemy.strength;
-                }
-            }
-            target = weakest;
-        }
-        else if (priority == Priority.Strongest)
-        {
-            int maxStrength = 100;
-            Enemy stronger = enemies[0];
-            foreach (Enemy enemy in enemies)
-            {
-                if (enemy.strength > maxStrength)
-                {
-                    stronger = enemy;
-                    maxStrength = enemy.strength;
-                }
-            }
-            target = stronger;
-        }
-        else if(priority == Priority.Nearest)
-        {
-            float minDistance = 100;
-            Enemy nearest = enemies[0];
-            foreach (Enemy enemy in enemies)
-            {
-                if (Vector3.Distance(enemy.transform.position, center.position) < minDistance)
-                {
-                    nearest = enemy;
-                    minDistance = Vector3.Distance(enemy.transform.position, center.position);
-                }
-            }
-            target = nearest;
-        }
-        else if(priority == Priority.Random)
-            target = enemies[Random.Range(0, enemies.Length)];
     }
-
-
 
 
     public override void SetPosition(Vector3 pos)
@@ -201,8 +142,10 @@ public abstract class CombatBuilding : Building, IWorkplace
     public override void Click()
     {
         SetCurAttackSpeed();
-        ui.EnableCombatPanel(buildingsName, this, person, damage, curAttackSpeed, radius, rotateSpeed, projectileSpeed);
+        ui.EnableCombatPanel(buildingsName, description, this, person, damage, curAttackSpeed, radius, rotateSpeed, projectileSpeed);
         ui.SetBuildingForPrioriting(this);
+        ui.DestroyCharacteristics();
+        InitCharacteristics();
     }
 
     public override void Destroy()
@@ -228,6 +171,8 @@ public abstract class CombatBuilding : Building, IWorkplace
             SetCurAttackSpeed();
             ui.UpdateCombatStatBlock(this, this.person, curAttackSpeed);
             sleep.SetActive(false);
+            ui.DestroyCharacteristics();
+            InitCharacteristics();
         }
     }
 
@@ -268,6 +213,8 @@ public abstract class CombatBuilding : Building, IWorkplace
             reloadTime = (60 / curAttackSpeed) / 60;
         }
     }
+
+    public abstract void InitCharacteristics();
 }
 
 public enum Priority 

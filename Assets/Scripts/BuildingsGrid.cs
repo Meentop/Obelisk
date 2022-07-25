@@ -8,14 +8,20 @@ public class BuildingsGrid : MonoBehaviour
 
     public Vector2Int gridSize;
     [SerializeField] WarPortal[] warPortals = new WarPortal[4];
+    [SerializeField] RoadTile[] roadPrefabs;
+    [SerializeField] Transform roadCanvas;
 
     Building[,] buildingsGrid;
     Building[,] wallGrid;
+    RectTransform[,] roadGrid;
     Building flyingBuilding;
+    RectTransform flyingRoad;
+
     Camera mainCamera;
     RangeRenderer rangeRenderer;
     DestructionLines destructionLines;
     DestructionBox destructionBox;
+    Resources resources;
     bool buildingPermit = true, destroyPermit = true;
 
     public BuildingsMode buildingsMode;
@@ -27,13 +33,22 @@ public class BuildingsGrid : MonoBehaviour
         Instance = this;
         buildingsGrid = new Building[gridSize.x, gridSize.y];
         wallGrid = new Building[gridSize.x + 1, gridSize.y + 1];
+        roadGrid = new RectTransform[gridSize.x / 2, gridSize.y / 2];
         mainCamera = Camera.main;
         rangeRenderer = RangeRenderer.Instance;
         destructionLines = DestructionLines.Instance;
         destructionBox = DestructionBox.Instance;
+        resources = Resources.Instance;
+    }
+       
+    private void Start()
+    {
+        foreach (Transform transform in roadCanvas)
+        {
+            PlaceRoad(transform.GetComponent<RectTransform>(), (int)transform.GetComponent<RectTransform>().localPosition.x, (int)transform.GetComponent<RectTransform>().localPosition.y);
+        }
     }
 
-    //Universal
     Vector3 startDestructionPos, endDestructionPos;
     float timerToUpdatePath = 0;
     bool pathUpdated = true;
@@ -68,16 +83,54 @@ public class BuildingsGrid : MonoBehaviour
 
         if (groundPlane.Raycast(ray, out float position))
         {
-            if (flyingBuilding != null)
+            Vector3 worldPosition = ray.GetPoint(position);
+
+            bool available = true;
+            if (flyingRoad != null)
+            {
+                int x = Mathf.RoundToInt(worldPosition.x) / 2;
+                int y = Mathf.RoundToInt(worldPosition.z) / 2;
+
+                if (x < 0 || x > gridSize.x / 2 - 1) available = false;
+                if (y < 0 || y > gridSize.y / 2 - 1) available = false;
+                if (available && IsRoadPlaceTaken(x, y)) available = false;
+                if (available && !buildingPermit) available = false;
+
+                flyingRoad.localPosition = new Vector3(x, y, 0);
+
+                if (buildingsMode == BuildingsMode.Normal)
+                {
+                    if (available && !resources.HasResources(Resource.Wood, 5)) available = false;
+
+                    if (!available) flyingRoad.GetComponent<UnityEngine.UI.Image>().color = Color.red;
+                    else flyingRoad.GetComponent<UnityEngine.UI.Image>().color = Color.white;
+
+                    if (available && Input.GetMouseButton(0))
+                    {
+                        RectTransform buildig = flyingRoad;
+                        PlaceFlyingRoad(x, y);
+                        flyingRoad = Instantiate(buildig, roadCanvas);
+                    }
+                }
+                else if (buildingsMode == BuildingsMode.Movement)
+                {
+                    if (!available) flyingRoad.GetComponent<UnityEngine.UI.Image>().color = Color.red;
+                    else flyingRoad.GetComponent<UnityEngine.UI.Image>().color = Color.white;
+
+                    if (available && Input.GetMouseButtonDown(0))
+                    {
+                        if (!cannotBePlaced)
+                            PlaceFlyingRoad(x, y);
+                        cannotBePlaced = false;
+                    }
+                }
+            }
+            else if (flyingBuilding != null)
             {
                 if (flyingBuilding is Fortification)
                 {
-                    Vector3 worldPosition = ray.GetPoint(position);
-
                     float x = Mathf.Floor(worldPosition.x) + 0.5f;
                     float y = Mathf.Floor(worldPosition.z) + 0.5f;
-
-                    bool available = true;
 
                     if (x < -0.5f || x > gridSize.x - 0.5f) available = false;
                     if (y < -0.5f || y > gridSize.y - 0.5f) available = false;
@@ -113,12 +166,8 @@ public class BuildingsGrid : MonoBehaviour
                 }
                 else
                 {
-                    Vector3 worldPosition = ray.GetPoint(position);
-
                     int x = Mathf.RoundToInt(worldPosition.x);
                     int y = Mathf.RoundToInt(worldPosition.z);
-
-                    bool available = true;
 
                     if (x < 0 || x > gridSize.x - flyingBuilding.size.x) available = false;
                     if (y < 0 || y > gridSize.y - flyingBuilding.size.y) available = false;
@@ -208,7 +257,7 @@ public class BuildingsGrid : MonoBehaviour
         {
             for (int y = 0; y < flyingBuilding.size.y; y++)
             {
-                if(buildingsGrid[placeX + x, placeY + y] != null) return true;
+                if (buildingsGrid[placeX + x, placeY + y] != null) return true;
             }
         }
         for (int x = 0; x < flyingBuilding.size.x - 1; x++)
@@ -226,6 +275,12 @@ public class BuildingsGrid : MonoBehaviour
     {
         return wallGrid[Mathf.CeilToInt(placeX), Mathf.CeilToInt(placeY)] != null;
     }
+
+    bool IsRoadPlaceTaken(int placeX, int placeY)
+    {
+        return roadGrid[placeX, placeY] != null;
+    }
+
 
     void PlaceFlyingBuilding(int placeX, int placeY)
     {
@@ -249,7 +304,15 @@ public class BuildingsGrid : MonoBehaviour
             flyingBuilding.GetComponent<Fortification>().SetWalls();
         buildings.Add(flyingBuilding);
         StartUpdatePaths();
-        flyingBuilding = null;
+    }
+
+    void PlaceFlyingRoad(int placeX, int placeY)
+    {
+        PlaceRoad(flyingRoad, placeX, placeY);
+        flyingRoad.GetComponent<UnityEngine.UI.Image>().color = Color.white;
+        if (buildingsMode == BuildingsMode.Normal)
+            resources.TakeResource(Resource.Wood, 5);
+        StartUpdatePaths();
     }
 
     public void StartUpdatePaths()
@@ -281,12 +344,25 @@ public class BuildingsGrid : MonoBehaviour
         flyingBuilding = Instantiate(prefabBuilding);
     }
 
+    public void StartPlacingRoad(RectTransform road)
+    {
+        FinishPlacingBuilding();
+
+        flyingRoad = Instantiate(road, roadCanvas);
+    }
+
     public void FinishPlacingBuilding()
     {
         if (flyingBuilding != null)
         {
             Destroy(flyingBuilding.gameObject);
             flyingBuilding = null;
+            rangeRenderer.Clear();
+        }
+        if (flyingRoad != null)
+        {
+            Destroy(flyingRoad.gameObject);
+            flyingRoad = null;
             rangeRenderer.Clear();
         }
     }
@@ -318,6 +394,11 @@ public class BuildingsGrid : MonoBehaviour
     public void PlaceWall(Building building, float placeX, float placeY)
     {
         wallGrid[Mathf.CeilToInt(placeX), Mathf.CeilToInt(placeY)] = building;
+    }
+
+    public void PlaceRoad(RectTransform road, int placeX, int placeY)
+    {
+        roadGrid[placeX, placeY] = road;
     }
 
     public void ClearGrid(Building building)
@@ -408,4 +489,18 @@ public enum BuildingsMode
     Normal,
     Destruction,
     Movement
+}
+
+public enum NeighborStatus 
+{ 
+    True,
+    Fasle,
+    NoMatter
+}
+
+[System.Serializable]
+class RoadTile
+{
+    [SerializeField] Sprite sprite;
+    [SerializeField] NeighborStatus[] neighborStatuses = new NeighborStatus[8];
 }

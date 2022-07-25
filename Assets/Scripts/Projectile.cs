@@ -2,22 +2,22 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Projectile : MonoBehaviour
+public abstract class Projectile : MonoBehaviour
 {
-    Cycles cycles;
+    protected Cycles cycles;
 
-    Enemy target;
-    float speed;
-    float damage;
+    protected Enemy target;
+    protected float speed;
+    protected float damage;
 
-    [SerializeField] float[] damageModifiers;
+    [SerializeField] protected float[] damageModifiers;
 
     private void Awake()
     {
         cycles = Cycles.Instance;
     }
 
-    private void FixedUpdate()
+    void FixedUpdate()
     {
         if (target == null)
         {
@@ -26,14 +26,17 @@ public class Projectile : MonoBehaviour
         }
         transform.forward = (target.center.transform.position - transform.position).normalized;
         transform.position = Vector3.MoveTowards(transform.position, target.center.transform.position, speed * cycles.timeScale);
-        if(Vector3.Distance(transform.position, target.center.transform.position) <= 0)
-        {
-            target.GetDamage(damage * damageModifiers[(int)target.type]);
-            Destroy(gameObject);
-        }
+        if (Vector3.Distance(transform.position, target.center.transform.position) <= 0.001f)
+            OnHit();
     }
 
-    public void Inisialization(Enemy target, float speed, float damage)
+    protected virtual void OnHit()
+    {
+        target.GetDamage(damage * damageModifiers[(int)target.type]);
+        Destroy(gameObject);
+    }
+
+    public void BasicInit(Enemy target, float speed, float damage)
     {
         this.target = target;
         this.speed = speed;

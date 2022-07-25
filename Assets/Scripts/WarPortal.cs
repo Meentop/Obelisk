@@ -27,6 +27,12 @@ public class WarPortal : Building
     public override void Click()
     {
         ui.EnableWarPortalPanel();
+        StartCoroutine(ClickCor());
+    }
+
+    IEnumerator ClickCor()
+    {
+        yield return new WaitForEndOfFrame();
         enemyAttacks.SetUIWaves(portalType);
     }
 
@@ -164,28 +170,15 @@ public class WarPortal : Building
             RaycastHit hit;
             if (Physics.Raycast(new Vector3(currentTile.position.x, 0, currentTile.position.y), directions[i], out hit, 0.5f, LayerMask.GetMask("Building")))
             {
-                //Debug.DrawRay(new Vector3(currentTile.position.x, 0, currentTile.position.y), directions[i]);
-                if (hit.collider.GetComponent<Barrier>() && (int)hit.collider.GetComponent<Barrier>().GetBarrierFor() != (int)enemyType)
-                {
+                if (hit.collider.GetComponent<Barrier>() && hit.collider.GetComponent<Barrier>().GetBarrierFor() != enemyType)
                     possibleTiles.Add(new Tile(new Vector2Int(currentTile.position.x + (int)directions[i].x, currentTile.position.y + (int)directions[i].z), currentTile.cost + 1, currentTile));
-                    //Debug.DrawRay(new Vector3(currentTile.position.x, 0, currentTile.position.y), directions[i]);
-                }
                 else if(hit.collider.GetComponent<Transportation>() && hit.collider.GetComponent<Transportation>().HasOutgoingPoints())
-                {
                     possibleTiles.Add(new Tile(hit.collider.GetComponent<Transportation>().GetOutgoingPoint(), currentTile.cost + 1, currentTile));
-                    
-                }
                 else if (hit.collider.GetComponent<IncomingPortal>() || hit.collider.GetComponent<OutgoingPortal>() || hit.collider.GetComponent<EmpirePortal>())
-                {
                     possibleTiles.Add(new Tile(new Vector2Int(currentTile.position.x + (int)directions[i].x, currentTile.position.y + (int)directions[i].z), currentTile.cost + 1, currentTile));
-                    //Debug.DrawRay(new Vector3(currentTile.position.x, 0, currentTile.position.y), directions[i]);
-                }
             }
             else
-            {
                 possibleTiles.Add(new Tile(new Vector2Int(currentTile.position.x + (int)directions[i].x, currentTile.position.y + (int)directions[i].z), currentTile.cost + 1, currentTile));
-                //Debug.DrawRay(new Vector3(currentTile.position.x, 0, currentTile.position.y), directions[i]);
-            }
         }
         possibleTiles.ForEach(tile => tile.SetDistance(targetTile.position));
         return possibleTiles

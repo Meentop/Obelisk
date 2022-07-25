@@ -440,6 +440,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   buildingsName: Cannon
+  description: Destroys enemies
   center: {fileID: 5770391428391720466}
   outline: {fileID: 0}
   renderers:
@@ -459,8 +460,8 @@ MonoBehaviour:
   damage: 50
   baseAttackSpeed: 0.33
   radius: 10
-  rotateSpeed: 0.03
-  projectileSpeed: 0.2
+  rotateSpeed: 0.5
+  projectileSpeed: 0.3
   rotationAttackPoint: {fileID: 96931798108375106}
   personSpawnPoint: {fileID: 96931798023572989}
   projectile: {fileID: 5267136448926454708, guid: cbdcde8f34d5f1b48adf556174a3a733, type: 3}
@@ -468,7 +469,11 @@ MonoBehaviour:
   sleep: {fileID: 185507373549543171}
   priority: 0
   enemies: []
-  target: {fileID: 0}
+  rangeChar: {fileID: 7022121146777652315, guid: 784db4fc8678a5f4e90ec492fb7bb8c2, type: 3}
+  damageChar: {fileID: 955410024901530941, guid: aadbf238f61e3cc44bc2d3a33af2ef5b, type: 3}
+  attackSpeedChar: {fileID: 3035879699197944587, guid: 367e2a5577175704c954da16bd53583f, type: 3}
+  rotationSpeedChar: {fileID: 3931819202706413651, guid: 3c59cd1c596fbdb4c82962a03b82472e, type: 3}
+  projectileSpeedChar: {fileID: 598701139918640499, guid: 102e44799d6b2584dbd81514f483877c, type: 3}
 --- !u!114 &273241335204091912
 MonoBehaviour:
   m_ObjectHideFlags: 0

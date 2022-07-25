@@ -10,28 +10,30 @@ public abstract class Enemy : MonoBehaviour
     [HideInInspector] public int number;
     public EnemyType type;
 
-    [SerializeField] int lvl, lvlStep;
-    [SerializeField] float baseHp;
-    [SerializeField] float maxHp, curHp;
+    [SerializeField] int lvl, lvlHealthStep, lvlMagicStep;
+    [SerializeField] float baseHp, baseMagic;
+    [SerializeField] float maxHp, curHp, maxMagic, curMagic;
     [SerializeField] float baseSpeed;
 
     public int strength;
 
     public Transform center;
-    [SerializeField] Transform hpBar;
+    [SerializeField] Transform hpBar, magicBar;
     [SerializeField] Vector2Int[] path;
 
     private void Start()
     {
         cycles = Cycles.Instance;
         enemyAttacks = EnemyAttacks.Instance;
-        maxHp = baseHp + (lvl * lvlStep);
+        maxHp = baseHp + (lvl * lvlHealthStep);
         curHp = maxHp;
-        UpdateHPBar();
+        maxMagic = baseMagic + (lvl * lvlMagicStep);
+        curMagic = maxMagic;
+        UpdateBars();
     }
 
     int curPosition = 0;
-    public bool invulnerable /*{ get; private set; } */= false;
+    public bool invulnerable { get; private set; } = false;
     private void FixedUpdate()
     {
         if (path.Length > 0)
@@ -59,22 +61,44 @@ public abstract class Enemy : MonoBehaviour
         this.path = path;
     }
 
+
+
+    public bool HasMagic()
+    {
+        return curMagic != 0;
+    }
+
     public void GetDamage(float damage)
     {
         curHp -= damage;
-        UpdateHPBar();
+        UpdateBars();
         if (curHp <= 0)
             Destroy(gameObject);
     }
 
-    void UpdateHPBar()
+    public void GetMagicDamage(float damage)
+    {
+        curMagic -= damage;
+        if (curMagic <= 0)
+            curMagic = 0;
+        UpdateBars();
+    }
+
+    void UpdateBars()
     {
         hpBar.localScale = new Vector3(curHp / maxHp, 1, 1);
+        if(maxMagic > 0)
+            magicBar.localScale = new Vector3(curMagic / maxMagic, 1, 1);
     }
 
     public float GetCurHP(int lvl)
     {
-        return baseHp + (lvl * lvlStep);
+        return baseHp + (lvl * lvlHealthStep);
+    }
+
+    public float GetCurMagic(int lvl)
+    {
+        return baseMagic + (lvl * lvlMagicStep);
     }
 
     private void OnDestroy()

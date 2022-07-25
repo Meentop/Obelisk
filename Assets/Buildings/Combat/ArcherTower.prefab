@@ -376,6 +376,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   buildingsName: Archer Tower
+  description: Destroys enemies
   center: {fileID: 5434871778827977648}
   outline: {fileID: 0}
   renderers:
@@ -391,7 +392,7 @@ MonoBehaviour:
   damage: 30
   baseAttackSpeed: 1
   radius: 5
-  rotateSpeed: 0.08
+  rotateSpeed: 1
   projectileSpeed: 0.2
   rotationAttackPoint: {fileID: 1882603105986125280}
   personSpawnPoint: {fileID: 1882603106169755743}
@@ -400,7 +401,11 @@ MonoBehaviour:
   sleep: {fileID: 1867598020569975457}
   priority: 0
   enemies: []
-  target: {fileID: 0}
+  rangeChar: {fileID: 7022121146777652315, guid: 784db4fc8678a5f4e90ec492fb7bb8c2, type: 3}
+  damageChar: {fileID: 955410024901530941, guid: aadbf238f61e3cc44bc2d3a33af2ef5b, type: 3}
+  attackSpeedChar: {fileID: 3035879699197944587, guid: 367e2a5577175704c954da16bd53583f, type: 3}
+  rotationSpeedChar: {fileID: 3931819202706413651, guid: 3c59cd1c596fbdb4c82962a03b82472e, type: 3}
+  projectileSpeedChar: {fileID: 598701139918640499, guid: 102e44799d6b2584dbd81514f483877c, type: 3}
 --- !u!114 &1779688160509431210
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -4,28 +4,22 @@ using UnityEngine;
 
 public class Barrier : Building
 {
-    [SerializeField] BarrierFor barrierFor;
+    [SerializeField] EnemyType barrierFor;
 
     public override void Click()
     {
+        ui.EnableBarrierPanel();
         ui.SetBuildingForBarriering(this);
     }
 
-    public void SetBarrierFor(BarrierFor barrier)
+    public void SetBarrierFor(EnemyType barrier)
     {
         barrierFor = barrier;
         buildingsGrid.StartUpdatePaths();
     }
 
-    public BarrierFor GetBarrierFor()
+    public EnemyType GetBarrierFor()
     {
         return barrierFor;
     }
-}
-
-public enum BarrierFor
-{
-    Ork,
-    Troll,
-    Gremline
 }

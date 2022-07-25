@@ -55,6 +55,12 @@ public class Cycles : MonoBehaviour
             SetPause();
         else if (Input.GetKeyDown(KeyCode.Space) && timeScale == 0 && !blockedPause)
             SetPreviousTimeScale();
+        else if (Input.GetKeyDown(KeyCode.Alpha1))
+            SetTimeScale(1);
+        else if (Input.GetKeyDown(KeyCode.Alpha2))
+            SetTimeScale(2);
+        else if (Input.GetKeyDown(KeyCode.Alpha3))
+            SetTimeScale(3);
 
         SetLightsRotation();
         SetLightsIntensity();
@@ -86,7 +92,7 @@ public class Cycles : MonoBehaviour
 
     public void SetTimeScale(int timeScale)
     {
-        if (!blockedPause)
+        if (!blockedPause && timeScale >= 0 && timeScale <= 3)
         {
             this.timeScale = timeScale;
             ui.SetTimeSpeedButton(timeScale);
@@ -99,7 +105,6 @@ public class Cycles : MonoBehaviour
         {
             previousTimeScale = timeScale;
             SetTimeScale(0);
-            ui.SetTimeSpeedButton(0);
         }
     }
 
@@ -107,7 +112,6 @@ public class Cycles : MonoBehaviour
     {
         blockedPause = false;
         SetTimeScale(previousTimeScale);
-        ui.SetTimeSpeedButton(previousTimeScale);
     }
 
     public void SetBlockedPause()

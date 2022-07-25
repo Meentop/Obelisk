@@ -45,11 +45,11 @@ public class PersonStatBlock : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public virtual void OnPointerEnter(PointerEventData eventData)
     {
-        ui.SetCursorOnButton(true);
+        
     }
 
     public virtual void OnPointerExit(PointerEventData eventData)
     {
-        ui.SetCursorOnButton(false);
+        
     }
 }

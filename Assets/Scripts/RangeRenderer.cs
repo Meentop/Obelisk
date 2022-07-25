@@ -6,6 +6,7 @@ public class RangeRenderer : MonoBehaviour
 {
     public static RangeRenderer Instance;
     LineRenderer lineRenderer;
+    UI ui;
 
     private void Awake()
     {
@@ -15,10 +16,12 @@ public class RangeRenderer : MonoBehaviour
     private void Start()
     {
         lineRenderer = GetComponent<LineRenderer>();
+        ui = UI.Instance;
     }
 
     public void DrawRange(int steps, CombatBuilding combat)
     {
+        print("draw range");
         if (combat.center != null)
         {
             Clear();
@@ -46,6 +49,7 @@ public class RangeRenderer : MonoBehaviour
 
     public void Clear()
     {
-        lineRenderer.positionCount = 0;
+        if (!ui.cursorOnButton)
+            lineRenderer.positionCount = 0;
     }
 }

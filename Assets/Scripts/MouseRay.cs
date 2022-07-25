@@ -52,26 +52,34 @@ public class MouseRay : MonoBehaviour
             }
             if (Physics.Raycast(ray, out hit, Mathf.Infinity, building))
             {
-                Building building = hit.collider.GetComponent<Building>();
-                building.Click();
-                selectedBulding = building;
-                outlineManager.EnableOutline(building.outline);
-                if (building is CombatBuilding && (ui.IsEnabledMenuButtons() || enemyAttacks.IsEnemyAttack()))
-                    rangeRenderer.DrawRange(20, building.GetComponent<CombatBuilding>());
-                else
-                    rangeRenderer.Clear();
-                //movement
-                if (ui.EnabledBuildingsGrid() && buildingsGrid.buildingsMode == BuildingsMode.Movement && !building.unmovable && buildingsGrid.IsFlyingBuildingNull())
+                if (hit.collider.GetComponent<Building>())
                 {
-                    buildingsGrid.SetFlyingBuilding(building);
-                    if (building is Fortification)
-                    {
-                        wallManager.DestroyWalls(building.GetComponent<Fortification>());
-                        buildingsGrid.ClearWallGrid(building.transform.position.x, building.transform.position.z);
-                    }
+                    Building building = hit.collider.GetComponent<Building>();
+                    building.Click();
+                    selectedBulding = building;
+                    outlineManager.EnableOutline(building.outline);
+                    if (building is CombatBuilding && (ui.IsEnabledMenuButtons() || enemyAttacks.IsEnemyAttack()))
+                        rangeRenderer.DrawRange(20, building.GetComponent<CombatBuilding>());
                     else
-                        buildingsGrid.ClearGrid(building);
-                    buildingsGrid.SaveBuildingPlace(building);
+                        rangeRenderer.Clear();
+                    if (ui.EnabledBuildingsGrid() && buildingsGrid.buildingsMode == BuildingsMode.Movement && !building.unmovable && buildingsGrid.IsFlyingBuildingNull())
+                    {
+                        buildingsGrid.SetFlyingBuilding(building);
+                        if (building is Fortification)
+                        {
+                            wallManager.DestroyWalls(building.GetComponent<Fortification>());
+                            buildingsGrid.ClearWallGrid(building.transform.position.x, building.transform.position.z);
+                        }
+                        else
+                            buildingsGrid.ClearGrid(building);
+                        buildingsGrid.SaveBuildingPlace(building);
+                    }
+                }
+                else if(hit.collider.GetComponent<RectTransform>())
+                {
+                    RectTransform road = hit.collider.GetComponent<RectTransform>();
+                    outlineManager.EnableOutline(road.GetComponent<Outline>());
+                    print("road");
                 }
             }
             else if (groundPlane.Raycast(ray, out float position))

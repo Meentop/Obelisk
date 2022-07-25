@@ -12,9 +12,9 @@ public class EnemyGroupBlock : MonoBehaviour
     [SerializeField] Sprite highDensity;
     [SerializeField] Image density;
     [Space]
-    [SerializeField] Text healthCount, enemyCount;
+    [SerializeField] Text healthCount, magicCount, enemyCount;
 
-    public void Initialization(EnemyType enemyType, bool lowDensity, int healthCount, int enemyCount)
+    public void Initialization(EnemyType enemyType, bool lowDensity, int healthCount, int magicCount, int enemyCount)
     {
         enemyDescriptionButton.GetComponent<Image>().sprite = enemyTypeSprites[(int)enemyType];
         enemyDescriptionButton.type = enemyType;
@@ -23,6 +23,7 @@ public class EnemyGroupBlock : MonoBehaviour
         else
             density.sprite = highDensity;
         this.healthCount.text = healthCount.ToString();
+        this.magicCount.text = magicCount.ToString();
         this.enemyCount.text = enemyCount.ToString();
     }
 }

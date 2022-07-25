@@ -22,7 +22,7 @@ public class IndustrialBuilding : Building, IWorkplace
 
     public override void Click()
     {
-        ui.EnableIndustrialPanel(this, buildingsName, (int)resource, AllProduction(), workers, maxWorkersCount);
+        ui.EnableIndustrialPanel(this, buildingsName, description, (int)resource, AllProduction(), workers, maxWorkersCount);
     }
 
     public override void Destroy()
@@ -101,8 +101,6 @@ public class IndustrialBuilding : Building, IWorkplace
             float curTime = 0;
             while (curTime < timeForOneProduct)
             {
-                if (cycles.timeScale == 0)
-                    yield return new WaitWhile(() => cycles.timeScale == 0);
                 yield return new WaitForSecondsRealtime(Time.fixedDeltaTime);
                 float modifier = 1;
                 if (person.isHungry)
