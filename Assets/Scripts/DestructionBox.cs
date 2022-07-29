@@ -19,17 +19,35 @@ public class DestructionBox : MonoBehaviour
         transform.localScale = new Vector3(sizeX, 1, sizeZ);
     }
 
-    List<Building> selectedBuildings = new List<Building>();
+    List<GameObject> selectedBuildings = new List<GameObject>();
 
+    bool roadMode = false;
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.GetComponent<Building>())
         {
-            Building building = collision.gameObject.GetComponent<Building>();
-            if (!building.undestroyable)
+            if (!roadMode)
             {
-                selectedBuildings.Add(building);
-                building.SetTransparent(false);
+                roadMode = false;
+                Building building = collision.gameObject.GetComponent<Building>();
+                if (!building.undestroyable)
+                {
+                    selectedBuildings.Add(collision.gameObject);
+                    building.SetTransparent(false);
+                }
+            }
+        }
+        else if (collision.gameObject.GetComponent<Road>())
+        {
+            if (roadMode)
+            {
+                roadMode = true;
+                Road road = collision.gameObject.GetComponent<Road>();
+                if (!road.undestroyable)
+                {
+                    selectedBuildings.Add(collision.gameObject);
+                    road.SetTransparent(false);
+                }
             }
         }
     }
@@ -41,19 +59,34 @@ public class DestructionBox : MonoBehaviour
             Building building = collision.gameObject.GetComponent<Building>();
             if (!building.undestroyable)
             {
-                selectedBuildings.Remove(building);
+                selectedBuildings.Remove(collision.gameObject);
                 building.SetNormal();
+            }
+        }
+        else if (collision.gameObject.GetComponent<Road>())
+        {
+            Road road = collision.gameObject.GetComponent<Road>();
+            if (!road.undestroyable)
+            {
+                selectedBuildings.Remove(collision.gameObject);
+                road.SetNormal();
             }
         }
     }
 
-    public List<Building> GetSelectedBuildings()
+    public List<GameObject> GetSelectedBuildings()
     {
         return selectedBuildings;
+    }
+
+    public void SetRoadMode(bool value)
+    {
+        roadMode = value;
     }
 
     public void ClearSelectedBuildings()
     {
         selectedBuildings.Clear();
+        SetRoadMode(false);
     }
 }

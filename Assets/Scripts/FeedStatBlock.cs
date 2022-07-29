@@ -9,9 +9,9 @@ public class FeedStatBlock : PersonStatBlock
     public Person person { get; private set; }
 
     [SerializeField] Text workplace;
-    [SerializeField] Image feedButton;
+    [SerializeField] Button feedButton;
 
-    public bool fed = false;
+    [HideInInspector] public bool fed = false;
 
     public virtual void FeedInitialization(Person person, bool hungry, string name, string workplace)
     {
@@ -26,14 +26,22 @@ public class FeedStatBlock : PersonStatBlock
         fed = value;
         if (fed)
         {
-            feedButton.color = Color.gray;
+            SetFeedButtonColor(new Color(1, 1, 1, 0.333f), new Color(1, 1, 1, 0.333f));
             ui.GiveFood();
         }
         else
         {
-            feedButton.color = Color.white;
+            SetFeedButtonColor(new Color(0, 0, 0, 0.333f), new Color(0.5f, 0.5f, 0.5f, 0.333f));
             ui.TakeFood();
         }
+    }
+
+    void SetFeedButtonColor(Color normalColor, Color highlightedColor)
+    {
+        ColorBlock cb = feedButton.colors;
+        cb.normalColor = normalColor;
+        cb.highlightedColor = highlightedColor;
+        feedButton.colors = cb;
     }
 
     public void FinishFeed()
@@ -49,9 +57,14 @@ public class FeedStatBlock : PersonStatBlock
             person.isHungry = false;
     }
 
+    public void Click()
+    {
+        if (ui.HasFood() || fed)
+            SetFed(!fed);
+    }
+
     public override void OnPointerDown(PointerEventData eventData)
     {
-        if(ui.HasFood() || fed)
-            SetFed(!fed);
+        
     }
 }

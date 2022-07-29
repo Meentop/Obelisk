@@ -75,11 +75,19 @@ public class MouseRay : MonoBehaviour
                         buildingsGrid.SaveBuildingPlace(building);
                     }
                 }
-                else if(hit.collider.GetComponent<RectTransform>())
+                else if(hit.collider.GetComponent<Road>())
                 {
-                    RectTransform road = hit.collider.GetComponent<RectTransform>();
-                    outlineManager.EnableOutline(road.GetComponent<Outline>());
-                    print("road");
+                    Road road = hit.collider.GetComponent<Road>();
+                    road.Click();
+                    outlineManager.EnableOutline(road.outline);
+                    if (ui.EnabledBuildingsGrid() && buildingsGrid.buildingsMode == BuildingsMode.Movement && !road.unmovable && buildingsGrid.IsFlyingRoadNull())
+                    {
+                        buildingsGrid.SetFlyingRoad(road);
+                        buildingsGrid.ClearRoadGrid(road.transform.localPosition);
+                        buildingsGrid.SaveRoadPlace(road.transform.localPosition);
+                        buildingsGrid.UpdateRoadTilesArround(road.transform.localPosition);
+                        buildingsGrid.SetDefaultSpriteForFlyingRoad();
+                    }
                 }
             }
             else if (groundPlane.Raycast(ray, out float position))

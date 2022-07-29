@@ -77,6 +77,7 @@
     <Compile Include="Assets\Scripts\BuildingsGrid.cs" />
     <Compile Include="Assets\Scripts\DestructionBox.cs" />
     <Compile Include="Assets\Scripts\EnemyGroupBlock.cs" />
+    <Compile Include="Assets\Scripts\Road.cs" />
     <Compile Include="Assets\Scripts\Barrier.cs" />
     <Compile Include="Assets\Scripts\EnemyDescriptionButton.cs" />
     <Compile Include="Assets\Scripts\PersonStatBlock.cs" />

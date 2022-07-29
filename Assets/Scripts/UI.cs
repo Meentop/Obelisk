@@ -814,4 +814,18 @@ public class UI : MonoBehaviour
             Enable(outgoingPortalPanel);
         }
     }
+
+    //Road
+
+    [Header("Road")]
+    [SerializeField] GameObject roadPanel;
+
+    public void EnableRoadPanle()
+    {
+        if (IsEnabledMenuButtons())
+        {
+            DisableAllBuildingPanels();
+            Enable(roadPanel);
+        }
+    }
 }

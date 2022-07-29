@@ -25,7 +25,7 @@ public class Resources : MonoBehaviour
         AddCapasity(Resource.Food, 50);
         AddCapasity(Resource.Wood, 400);
         AddCapasity(Resource.Metal, 400);
-        AddResource(Resource.Food, 49);
+        AddResource(Resource.Food, 2);
         AddResource(Resource.Wood, 450);
         AddResource(Resource.Metal, 400);
         AddResource(Resource.ResearchPoint, 999);

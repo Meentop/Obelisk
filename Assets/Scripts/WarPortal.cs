@@ -24,6 +24,12 @@ public class WarPortal : Building
         buildingsGrid.PlaceBuilding(this, (int)transform.position.x, (int)transform.position.z);
     }
 
+    protected override void Update()
+    {
+        base.Update();
+
+    }
+
     public override void Click()
     {
         ui.EnableWarPortalPanel();
@@ -143,6 +149,7 @@ public class WarPortal : Building
             List<Tile> walkableTiles = GetWalkableTiles(checkTile, finish, enemyType);
             foreach (Tile walkableTile in walkableTiles)
             {
+                //print(walkableTile.position.x + " " + walkableTile.position.y);
                 if (visitedTiles.Any(tile => tile.position == walkableTile.position))
                     continue;
                 if (activeTiles.Any(tile => tile.position == walkableTile.position))
@@ -167,23 +174,28 @@ public class WarPortal : Building
         List<Tile> possibleTiles = new List<Tile>();
         for (int i = 0; i < 4; i++)
         {
+            Vector3 curPos = new Vector3(currentTile.position.x, 0, currentTile.position.y);
             RaycastHit hit;
-            if (Physics.Raycast(new Vector3(currentTile.position.x, 0, currentTile.position.y), directions[i], out hit, 0.5f, LayerMask.GetMask("Building")))
+            if (Physics.Raycast(curPos + new Vector3(0, 0.1f, 0), directions[i], out hit, 0.5f, LayerMask.GetMask("Building")))
             {
                 if (hit.collider.GetComponent<Barrier>() && hit.collider.GetComponent<Barrier>().GetBarrierFor() != enemyType)
-                    possibleTiles.Add(new Tile(new Vector2Int(currentTile.position.x + (int)directions[i].x, currentTile.position.y + (int)directions[i].z), currentTile.cost + 1, currentTile));
-                else if(hit.collider.GetComponent<Transportation>() && hit.collider.GetComponent<Transportation>().HasOutgoingPoints())
+                    possibleTiles.Add(new Tile(new Vector2Int((int)curPos.x + (int)directions[i].x, (int)curPos.z + (int)directions[i].z), currentTile.cost + 1, currentTile));
+                else if (hit.collider.GetComponent<Transportation>() && hit.collider.GetComponent<Transportation>().HasOutgoingPoints())
                     possibleTiles.Add(new Tile(hit.collider.GetComponent<Transportation>().GetOutgoingPoint(), currentTile.cost + 1, currentTile));
                 else if (hit.collider.GetComponent<IncomingPortal>() || hit.collider.GetComponent<OutgoingPortal>() || hit.collider.GetComponent<EmpirePortal>())
-                    possibleTiles.Add(new Tile(new Vector2Int(currentTile.position.x + (int)directions[i].x, currentTile.position.y + (int)directions[i].z), currentTile.cost + 1, currentTile));
+                    possibleTiles.Add(new Tile(new Vector2Int((int)curPos.x + (int)directions[i].x, (int)curPos.z + (int)directions[i].z), currentTile.cost + 1, currentTile));
             }
             else
-                possibleTiles.Add(new Tile(new Vector2Int(currentTile.position.x + (int)directions[i].x, currentTile.position.y + (int)directions[i].z), currentTile.cost + 1, currentTile));
+            {
+                possibleTiles.Add(new Tile(new Vector2Int((int)curPos.x + (int)directions[i].x, (int)curPos.z + (int)directions[i].z), currentTile.cost + 1, currentTile));
+                Debug.DrawRay(new Vector3(curPos.x, 0, curPos.z), directions[i]);
+            }
         }
         possibleTiles.ForEach(tile => tile.SetDistance(targetTile.position));
         return possibleTiles
             .Where(tile => tile.position.x >= 0 && tile.position.x <= buildingsGrid.gridSize.x - 1)
             .Where(tile => tile.position.y >= 0 && tile.position.y <= buildingsGrid.gridSize.y - 1)
+            .Where(tile => buildingsGrid.HasRoad(tile.position.x, tile.position.y))
             .ToList();
     }
 
